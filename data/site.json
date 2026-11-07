@@ -48,9 +48,9 @@
       "image": "/img/p/barnel-b175-1.jpg"
     },
     {
-      "slug": "unelte-de-plantat",
-      "name": "Unelte de plantat",
-      "intro": "Tăvițe alveolare și echipamente pentru transplantat răsaduri.",
+      "slug": "anti-daunatori",
+      "name": "Anti-dăunători",
+      "intro": "Insecticide de uz casnic împotriva muștelor, țânțarilor, gândacilor, furnicilor și viespilor.",
       "image": ""
     },
     {
@@ -69,12 +69,6 @@
       "slug": "pardoseala-exterior",
       "name": "Pardoseală exterior",
       "intro": "Dale din compozit pentru terase, alei și grădini.",
-      "image": ""
-    },
-    {
-      "slug": "anti-daunatori",
-      "name": "Anti-dăunători",
-      "intro": "Insecticide de uz casnic împotriva muștelor, țânțarilor, gândacilor, furnicilor și viespilor.",
       "image": ""
     }
   ],
