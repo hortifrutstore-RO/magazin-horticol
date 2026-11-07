@@ -3,12 +3,13 @@
 import CATALOG from './_catalog.json';
 import SHOP from './_shop.json';
 import { sendMail, esc } from '../_lib/mail.js';
+import { reserve, restore, syncCatalogStock } from '../_lib/stock.js';
 
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { 'content-type': 'application/json; charset=utf-8' } });
 const str = (v, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const lei = n => n.toFixed(2).replace('.', ',') + ' lei';
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   let b;
   try { b = await request.json(); } catch { return json({ ok: false, error: 'Cerere invalidă.' }, 400); }
   if (b.website) return json({ ok: true, number: 'OK', total: 0 }); // capcană pentru roboți
@@ -45,12 +46,17 @@ export async function onRequestPost({ request, env }) {
   const number = 'MH' + d.toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 
   if (!env.DB) return json({ ok: false, error: 'Baza de date nu este configurată.' }, 500);
+  const rs = await reserve(env, items);
+  if (!rs.ok) return json({ ok: false, error: 'Stoc insuficient: ' + rs.short.map(x => `${x.name} (${x.left ? 'mai sunt ' + x.left + ' buc.' : 'epuizat'})`).join('; ') + '.', stock: rs.short }, 409);
+  try {
   await env.DB.prepare(`INSERT INTO orders (number, created_at, status, name, phone, email, county, city, zip, address, delivery, easybox, payment,
       company_name, company_cui, notes, newsletter, items_json, subtotal, shipping, total)
       VALUES (?1, ?2, 'noua', ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)`)
     .bind(number, d.toISOString(), o.name, o.phone, o.email, o.county, o.city, o.zip, o.address, o.delivery, o.easybox, o.payment,
       o.company ? o.companyName : null, o.company ? o.companyCui : null, o.notes, o.newsletter ? 1 : 0, JSON.stringify(items), subtotal, shipping, total)
     .run();
+  } catch (e) { await restore(env, items); throw e; }
+  if (rs.zeroed.length) waitUntil(syncCatalogStock(env, rs.zeroed));
 
   const rows = items.map(x => `<tr><td>${esc(x.name)}</td><td align="center">${x.qty}</td><td align="right">${lei(x.total)}</td></tr>`).join('');
   const where = o.delivery === 'easybox' ? `Easybox: ${esc(o.easybox)}` : `${esc(o.address)}, ${esc(o.city)}, jud. ${esc(o.county)}`;

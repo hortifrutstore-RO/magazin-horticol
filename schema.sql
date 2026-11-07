@@ -21,3 +21,5 @@ CREATE INDEX IF NOT EXISTS orders_created ON orders(created_at);
 
 CREATE TABLE IF NOT EXISTS login_attempts (ip TEXT NOT NULL, ts TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS login_attempts_ip ON login_attempts(ip, ts);
+
+CREATE TABLE IF NOT EXISTS stock (sku TEXT PRIMARY KEY, qty INTEGER NOT NULL);

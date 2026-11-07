@@ -13,12 +13,14 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 /* ---------- catalog index ---------- */
 let CAT = null;
 function catalog() {
-  if (!CAT) CAT = fetch('/data/search.json').then(r => r.json()).then(list => {
-    const by = {}; list.forEach(p => { by[p.sku] = p; p._n = norm([p.name, p.cat, p.sub || '', p.sku].join(' ')); p._w = p._n.split(/\s+/).filter(Boolean); });
+  if (!CAT) CAT = Promise.all([fetch('/data/search.json').then(r => r.json()), liveStock()]).then(([list, st]) => {
+    const by = {}; list.forEach(p => { if (p.sku in st) { p.left = st[p.sku]; p.inStock = st[p.sku] > 0; } by[p.sku] = p; p._n = norm([p.name, p.cat, p.sub || '', p.sku].join(' ')); p._w = p._n.split(/\s+/).filter(Boolean); });
     return { list, by };
   });
   return CAT;
 }
+let ST = null;
+function liveStock() { if (!ST) ST = fetch('/api/stock').then(r => r.ok ? r.json() : {}).catch(() => ({})); return ST; }
 function norm(s) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[ş]/g, 's').replace(/[ţ]/g, 't')
     .replace(/[^a-z0-9]+/g, ' ').trim();
@@ -52,8 +54,18 @@ document.addEventListener('click', e => {
   track('add_to_cart', { items: [{ item_id: b.dataset.add, quantity: q }] });
 });
 
+/* ---------- stoc în timp real ---------- */
+liveStock().then(st => {
+  $$('.card[data-sku]').forEach(c => { const q = st[c.dataset.sku]; if (q === undefined) return;
+    if (q <= 0 && c.dataset.stock === '1') { c.dataset.stock = '0'; c.classList.add('is-out'); const b = $('[data-add]', c); if (b) { b.outerHTML = '<span class="btn btn-ghost" aria-disabled="true">Stoc epuizat</span>'; } const im = $('.card-img', c); const bd = $('.badge', im); if (bd) bd.remove(); im.insertAdjacentHTML('beforeend', '<span class="badge out">Stoc epuizat</span>'); } });
+  const buy = $('[data-with-qty]'); if (!buy) return; const q = st[buy.dataset.add]; if (q === undefined) return;
+  const qi = $('[data-qty-input]');
+  if (q <= 0) { $('.buy-row').outerHTML = '<div class="stock out"><i aria-hidden="true"></i><span><strong>Stoc epuizat</strong> momentan</span></div>'; const s0 = $('.stock:not(.out)'); if (s0) s0.remove(); }
+  else { qi.max = q; if (q <= 5) { const sp = $('.stock span'); if (sp) sp.innerHTML = `<strong>Ultimele ${q} ${q === 1 ? 'bucată' : 'bucăți'}</strong> · expediere în 24–48 h`; } }
+});
+
 /* ---------- product page ---------- */
-$$('[data-qty]').forEach(b => b.addEventListener('click', () => { const i = $('[data-qty-input]'); i.value = Math.max(1, Math.min(99, (parseInt(i.value, 10) || 1) + parseInt(b.dataset.qty, 10))); }));
+$$('[data-qty]').forEach(b => b.addEventListener('click', () => { const i = $('[data-qty-input]'); i.value = Math.max(1, Math.min(parseInt(i.max, 10) || 99, (parseInt(i.value, 10) || 1) + parseInt(b.dataset.qty, 10))); }));
 const gal = $('[data-gallery]');
 if (gal) gal.addEventListener('click', e => { const t = e.target.closest('[data-src]'); if (!t) return; $('[data-main]', gal).src = t.dataset.src; $$('[data-src]', gal).forEach(x => x.setAttribute('aria-current', x === t ? 'true' : 'false')); });
 
@@ -177,12 +189,12 @@ if (co) (async () => {
   const idx = await catalog();
   const lines = $('[data-cart-lines]', co);
   const render = () => {
-    let it = cart.items().filter(x => idx.by[x.sku] && idx.by[x.sku].inStock);
+    let it = cart.items().filter(x => idx.by[x.sku] && idx.by[x.sku].inStock).map(x => { const l = idx.by[x.sku].left; return l !== undefined && x.qty > l ? { sku: x.sku, qty: l } : x; });
     cart.save(it);
     if (!it.length) { co.hidden = true; $('[data-cart-empty]').hidden = false; return; }
     let sub = 0, n = 0;
     lines.innerHTML = it.map(x => { const p = idx.by[x.sku]; const t = p.price * x.qty; sub += t; n += x.qty;
-      return `<div class="line" data-sku="${p.sku}"><img src="/img/p/${p.img}" alt=""><div class="info"><a href="/produs/${p.slug}/">${esc(p.name)}</a><small>${lei(p.price)} / buc.</small><button type="button" class="rm" data-rm>Elimină</button></div><div class="qty"><button type="button" aria-label="Scade cantitatea" data-q="-1">−</button><input type="number" min="1" max="99" value="${x.qty}" aria-label="Cantitate" data-qi><button type="button" aria-label="Crește cantitatea" data-q="1">+</button></div><span class="tot">${lei(t)}</span></div>`; }).join('');
+      return `<div class="line" data-sku="${p.sku}"><img src="/img/p/${p.img}" alt=""><div class="info"><a href="/produs/${p.slug}/">${esc(p.name)}</a><small>${lei(p.price)} / buc.</small><button type="button" class="rm" data-rm>Elimină</button></div><div class="qty"><button type="button" aria-label="Scade cantitatea" data-q="-1">−</button><input type="number" min="1" max="${p.left ?? 99}" value="${x.qty}" aria-label="Cantitate" data-qi><button type="button" aria-label="Crește cantitatea" data-q="1">+</button></div><span class="tot">${lei(t)}</span></div>`; }).join('');
     const ship = sub >= S.freeOver ? 0 : S.ship;
     $('[data-cart-title]').textContent = `Coșul tău · ${n} ${n === 1 ? 'produs' : 'produse'}`;
     $('[data-sum-label]').textContent = `Produse (${n})`;
@@ -213,6 +225,7 @@ if (co) (async () => {
     try {
       const r = await fetch('/api/order', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fd) });
       const j = await r.json().catch(() => ({}));
+      if (r.status === 409 && j.stock) { j.stock.forEach(x => { if (idx.by[x.sku]) { idx.by[x.sku].left = x.left; idx.by[x.sku].inStock = x.left > 0; } }); render(); }
       if (!r.ok || !j.ok) throw new Error(j.error || 'Comanda nu a putut fi trimisă.');
       track('purchase', { transaction_id: j.number, value: j.total, currency: 'RON' });
       cart.clear(); location.href = '/comanda-plasata/?nr=' + encodeURIComponent(j.number);
