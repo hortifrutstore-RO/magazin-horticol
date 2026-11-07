@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% from "_card.html" import card with context %}
+{% block title %}Magazin horticol HORTIFRUT – foarfeci Barnel și unelte pentru livadă{% endblock %}
+{% block main %}
+<section class="wrap hero">
+  <div class="hero-text">
+    <span class="eyebrow">{{ site.hero.eyebrow }}</span>
+    <h1>{{ site.hero.title }}</h1>
+    <p>{{ site.hero.text }}</p>
+    <div class="btns">
+      <a class="btn" href="{{ site.hero.cta.href }}">{{ site.hero.cta.label }} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn btn-ghost" href="{{ site.hero.cta2.href }}">{{ site.hero.cta2.label }}</a>
+    </div>
+  </div>
+  <img class="hero-img" src="{{ site.hero.image }}" alt="{{ site.hero.imageAlt }}" width="945" height="1061" fetchpriority="high">
+</section>
+
+<section class="perks"><div class="wrap">
+  {% for p in site.perks %}<div class="perk"><b aria-hidden="true">{{ loop.index }}</b><div><strong>{{ p.t }}</strong><span>{{ p.d }}</span></div></div>{% endfor %}
+</div></section>
+
+<section class="wrap section">
+  <div class="section-head"><div><span class="label">Alese pentru tine</span><h2>{{ site.featuredTitle }}</h2></div>
+    <a class="btn btn-ghost" href="/categorie/foarfeci-barnel/">Vezi toate</a></div>
+  <div class="grid">{% for p in featured %}{{ card(p) }}{% endfor %}</div>
+</section>
+
+<section class="wrap section">
+  <div class="section-head"><h2>Cumpără pe categorii</h2></div>
+  <div class="cats">
+  {% for c in cats %}
+    <a class="cat" href="/categorie/{{ c.slug }}/">
+      <div class="cat-img{% if c.contain %} contain{% endif %}"><img src="{{ c.img }}" alt="" loading="lazy"></div>
+      <strong>{{ c.name }}</strong><span>{{ c.count }} {{ 'produs' if c.count == 1 else 'produse' }}</span>
+    </a>
+  {% endfor %}
+  </div>
+</section>
+
+<section class="wrap section">
+  <div class="band">
+    <img src="{{ site.barnelBand.image }}" alt="Foarfecă Barnel OR32A cu brațe lungi, pe iarbă" loading="lazy">
+    <div class="band-box">
+      <span class="eyebrow">{{ site.barnelBand.eyebrow }}</span>
+      <h2>{{ site.barnelBand.title }}</h2>
+      <p>{{ site.barnelBand.text }}</p>
+      <a class="btn" href="{{ site.barnelBand.href }}">Vezi produsele Barnel</a>
+    </div>
+  </div>
+</section>
+
+<section class="wrap section" style="padding-bottom:96px">
+  <div class="help">
+    <img src="/img/site/taiere-livada.jpg" alt="Tăiere cu foarfeca Barnel în livadă" loading="lazy">
+    <div class="help-box">
+      <h2>Nu știi ce foarfecă ți se potrivește?</h2>
+      <p>Spune-ne ce tai: vie, pomi, arbuști sau ramuri groase. Te ajutăm să alegi unealta potrivită.</p>
+      <div class="btns">
+        <a class="btn btn-accent" href="tel:{{ site.contact.phoneHref }}">{{ site.contact.phone }}</a>
+        <a class="btn btn-ghost" href="https://wa.me/{{ site.contact.whatsapp }}" rel="noopener" target="_blank">Scrie-ne pe WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

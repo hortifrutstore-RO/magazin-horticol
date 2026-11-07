@@ -1,0 +1,177 @@
+{
+  "name": "magazin-horticol.ro",
+  "brand": "HORTIFRUT",
+  "url": "https://magazin-horticol.ro",
+  "company": {
+    "name": "HORTIFRUT CONSULTING SRL",
+    "cui": "37974874",
+    "reg": "J12/4952/2017",
+    "capital": "200 lei",
+    "address": "Str. Tășnad 19/8, Cluj-Napoca",
+    "vat": false
+  },
+  "contact": {
+    "phone": "0746 242 877",
+    "phoneHref": "+40746242877",
+    "email": "info@magazin-horticol.ro",
+    "whatsapp": "40746242877"
+  },
+  "shipping": {
+    "freeOver": 200,
+    "cost": 16.99,
+    "returnCost": 16.99,
+    "carrier": "Sameday",
+    "days": "24–48 h",
+    "trackingUrl": "https://sameday.ro/status-colet/?awb={awb}"
+  },
+  "announcement": "Livrare gratuită pentru comenzi peste 200 lei · Expediere prin Sameday în 24–48 h",
+  "hero": {
+    "eyebrow": "Sezonul de tăieri a început",
+    "title": "Unelte profesionale pentru livadă și grădină",
+    "text": "Foarfeci, fierăstraie și mânere telescopice Barnel, alese de oameni care lucrează în livadă.",
+    "image": "/img/site/hero-livada.jpg",
+    "imageAlt": "Culesul merelor în livadă",
+    "cta": {
+      "label": "Vezi foarfecile Barnel",
+      "href": "/categorie/foarfeci-barnel/"
+    },
+    "cta2": {
+      "label": "Toate produsele",
+      "href": "/categorie/foarfeci-barnel/"
+    }
+  },
+  "categories": [
+    {
+      "slug": "foarfeci-barnel",
+      "name": "Foarfeci Barnel",
+      "intro": "Foarfeci de grădină, foarfeci la două mâini, telescopice și fierăstraie profesionale. Lame din oțel japonez cu conținut ridicat de carbon, fabricate în SUA.",
+      "image": "/img/p/barnel-b175-1.jpg"
+    },
+    {
+      "slug": "unelte-de-plantat",
+      "name": "Unelte de plantat",
+      "intro": "Tăvițe alveolare și echipamente pentru transplantat răsaduri.",
+      "image": ""
+    },
+    {
+      "slug": "recoltat-si-greble",
+      "name": "Recoltat și greble",
+      "intro": "Dispozitive pentru cules nuci, alune și fructe de pe sol, echipamente de recoltat și greble.",
+      "image": "/img/site/mar-cules.jpg"
+    },
+    {
+      "slug": "manusi-si-accesorii",
+      "name": "Mănuși și accesorii",
+      "intro": "Mănuși de lucru pentru grădină și livadă: anti-tăiere, termice, impermeabile, din piele.",
+      "image": ""
+    },
+    {
+      "slug": "pardoseala-exterior",
+      "name": "Pardoseală exterior",
+      "intro": "Dale din compozit pentru terase, alei și grădini.",
+      "image": ""
+    },
+    {
+      "slug": "anti-daunatori",
+      "name": "Anti-dăunători",
+      "intro": "Insecticide de uz casnic împotriva muștelor, țânțarilor, gândacilor, furnicilor și viespilor.",
+      "image": ""
+    }
+  ],
+  "perks": [
+    {
+      "t": "Expediere prin Sameday",
+      "d": "Livrare în 24–48 h"
+    },
+    {
+      "t": "Plata la livrare",
+      "d": "Sau prin transfer bancar"
+    },
+    {
+      "t": "Retur în 14 zile",
+      "d": "Conform OUG 34/2014"
+    },
+    {
+      "t": "Produse originale Barnel®",
+      "d": "Unelte profesionale"
+    }
+  ],
+  "barnelBand": {
+    "eyebrow": "Unelte Barnel®",
+    "title": "Aceeași calitate, sezon după sezon",
+    "text": "Construcție robustă, lame ascuțite și tăieri curate fără efort.",
+    "image": "/img/site/barnel-or32a.jpg",
+    "href": "/categorie/foarfeci-barnel/"
+  },
+  "featuredTitle": "Oferte de sezon",
+  "popularSearches": [
+    "foarfecă vie",
+    "mâner telescopic",
+    "pilă ascuțit",
+    "greblă",
+    "mănuși",
+    "fierăstrău"
+  ],
+  "synonyms": [
+    [
+      "fierastrau",
+      "ferastrau",
+      "ferestrau",
+      "fierestrau",
+      "joagar",
+      "serrucho"
+    ],
+    [
+      "foarfeca",
+      "forfeca",
+      "foarfece",
+      "foarfeci",
+      "secator",
+      "secatoare"
+    ],
+    [
+      "telescopic",
+      "telescopica",
+      "prelungitor",
+      "maner lung"
+    ],
+    [
+      "pila",
+      "ascutitoare",
+      "ascutit"
+    ],
+    [
+      "manusi",
+      "manusa"
+    ],
+    [
+      "grebla",
+      "greble",
+      "rastel"
+    ],
+    [
+      "insecticid",
+      "spray",
+      "gandaci",
+      "muste",
+      "furnici",
+      "viespi"
+    ],
+    [
+      "tavita",
+      "tavite",
+      "alveolara",
+      "rasaduri"
+    ],
+    [
+      "pardoseala",
+      "dala",
+      "dale",
+      "podea"
+    ]
+  ],
+  "analytics": {
+    "ga4": "",
+    "googleAds": ""
+  }
+}

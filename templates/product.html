@@ -1,0 +1,57 @@
+{% extends "base.html" %}{% from "_card.html" import card with context %}
+{% block title %}{{ p.name }} | {{ site.name }}{% endblock %}
+{% block desc %}{{ (p.short or p.name)[:155] }}{% endblock %}
+{% block og %}<meta property="og:image" content="{{ site.url }}/img/p/{{ p.images[0] }}"><meta property="og:type" content="product">{% endblock %}
+{% block head %}
+<script type="application/ld+json">{{ ld|safe }}</script>
+{% endblock %}
+{% block main %}
+<div class="wrap">
+  <nav class="crumbs" aria-label="Navigare"><a href="/">Acasă</a><span aria-hidden="true">/</span><a href="/categorie/{{ p.category }}/">{{ p.categoryName }}</a><span aria-hidden="true">/</span><span>{{ p.name }}</span></nav>
+  <section class="pdp">
+    <div class="gallery" data-gallery>
+      <div class="gallery-main">
+        <img src="/img/p/{{ p.images[0] }}" alt="{{ p.name }}" width="1000" height="1000" data-main>
+        {% if not p.inStock %}<span class="badge out">Stoc epuizat</span>{% elif p.off %}<span class="badge">−{{ p.off }}%</span>{% endif %}
+      </div>
+      {% if p.images|length > 1 %}
+      <div class="thumbs">
+        {% for im in p.images %}<button type="button" aria-label="Imaginea {{ loop.index }}" aria-current="{{ 'true' if loop.first else 'false' }}" data-src="/img/p/{{ im }}"><img src="/img/p/{{ im }}" alt="" loading="lazy"></button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="buy">
+      <span class="label">{{ p.sub or p.categoryName }} · Cod {{ p.sku }}</span>
+      <h1>{{ p.name }}</h1>
+      {% if p.short %}<p class="lead">{{ p.short }}</p>{% endif %}
+      <div class="price"><span class="now">{{ p.price|lei }}</span>{% if p.oldPrice %}<s>{{ p.oldPrice|lei }}</s>{% endif %}</div>
+      {% if p.inStock %}
+      <div class="stock"><i aria-hidden="true"></i><span><strong>În stoc</strong> · expediere în {{ site.shipping.days }} prin {{ site.shipping.carrier }}</span></div>
+      <div class="buy-row">
+        <div class="qty"><button type="button" aria-label="Scade cantitatea" data-qty="-1">−</button><label class="sr" for="qty">Cantitate</label><input id="qty" type="number" min="1" max="99" value="1" inputmode="numeric" data-qty-input><button type="button" aria-label="Crește cantitatea" data-qty="1">+</button></div>
+        <button class="btn btn-cart" data-add="{{ p.sku }}" data-with-qty>Adaugă în coș</button>
+      </div>
+      {% else %}
+      <div class="stock out"><i aria-hidden="true"></i><span><strong>Stoc epuizat</strong> momentan</span></div>
+      <a class="btn btn-ghost" href="tel:{{ site.contact.phoneHref }}">Sună să întrebi când revine</a>
+      {% endif %}
+      <div class="facts">
+        <div class="fact"><i></i><div><strong>{% if p.price >= site.shipping.freeOver %}Livrare gratuită{% else %}Livrare {{ site.shipping.cost|lei }}{% endif %}</strong><span>Gratuit pentru comenzi peste {{ site.shipping.freeOver }} lei. {{ site.shipping.carrier }}, în {{ site.shipping.days }}.</span></div></div>
+        <div class="fact"><i></i><div><strong>Plata la livrare sau prin transfer</strong><span>Plătești curierului la primirea coletului.</span></div></div>
+        <div class="fact"><i></i><div><strong>Retur în 14 zile</strong><span>Transportul de retur, {{ site.shipping.returnCost|lei }}, este plătit de client.</span></div></div>
+        <div class="fact"><i></i><div><strong>Garanție legală de conformitate</strong><span>2 ani, conform legislației în vigoare.</span></div></div>
+      </div>
+      <a href="tel:{{ site.contact.phoneHref }}">Ai întrebări despre produs? Sună la {{ site.contact.phone }}</a>
+    </div>
+  </section>
+</div>
+{% if p.description %}
+<section class="desc-wrap"><div class="wrap"><h2>Descriere</h2><div class="prose">{{ p.description|safe }}</div></div></section>
+{% endif %}
+{% if related %}
+<section class="wrap section" style="padding-bottom:96px">
+  <div class="section-head"><h2>Din aceeași categorie</h2></div>
+  <div class="grid">{% for r in related %}{{ card(r) }}{% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

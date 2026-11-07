@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Căutare | {{ site.name }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block main %}
+<div class="wrap">
+  <nav class="crumbs" aria-label="Navigare"><a href="/">Acasă</a><span aria-hidden="true">/</span><span>Căutare</span></nav>
+  <div class="page-head"><h1 data-search-title>Căutare</h1><p data-search-note></p></div>
+  <div class="listing" style="padding-bottom:96px">
+    <div class="results">
+      <div class="toolbar"><span data-count></span>
+        <label>Sortează <select data-sort><option value="rec">Relevanță</option><option value="pa">Preț crescător</option><option value="pd">Preț descrescător</option></select></label></div>
+      <div class="grid" data-search-grid></div>
+      <div class="empty" data-empty hidden>Nu am găsit produse. Încearcă alt cuvânt sau <a href="tel:{{ site.contact.phoneHref }}">sună-ne</a>.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

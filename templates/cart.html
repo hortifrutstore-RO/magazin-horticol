@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Coș și finalizare comandă | {{ site.name }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block main %}
+<div class="wrap">
+  <nav class="steps" aria-label="Pași comandă"><b>1. Coș</b><span aria-hidden="true">→</span><b>2. Livrare și plată</b><span aria-hidden="true">→</span><span>3. Confirmare</span></nav>
+  <h1 style="margin:20px 0 0;font-size:clamp(34px,4.5vw,52px)">Finalizează comanda</h1>
+  <div class="empty" data-cart-empty hidden style="margin:32px 0 96px">Coșul este gol. <a href="/categorie/foarfeci-barnel/">Vezi produsele</a></div>
+  <form class="checkout" data-checkout novalidate>
+    <div class="co-main">
+      <div class="panel"><h2 data-cart-title>Coșul tău</h2><div data-cart-lines></div></div>
+
+      <div class="panel">
+        <h2>Date de livrare</h2>
+        <div class="form-grid">
+          <label class="fl">Nume și prenume<input class="field" name="name" autocomplete="name" required><span class="err">Completează numele.</span></label>
+          <label class="fl">Telefon<input class="field" name="phone" type="tel" autocomplete="tel" required pattern="[0-9 +\(\)\.\-]{9,}"><span class="err">Telefon invalid.</span></label>
+          <label class="fl">Email<input class="field" name="email" type="email" autocomplete="email" required><span class="err">Email invalid.</span></label>
+          <label class="fl">Județ<select class="field" name="county" autocomplete="address-level1" required><option value="">Alege județul</option>{% for j in judete %}<option>{{ j }}</option>{% endfor %}</select><span class="err">Alege județul.</span></label>
+          <label class="fl">Localitate<input class="field" name="city" autocomplete="address-level2" required><span class="err">Completează localitatea.</span></label>
+          <label class="fl">Cod poștal (opțional)<input class="field" name="zip" autocomplete="postal-code" inputmode="numeric"></label>
+        </div>
+        <label class="fl" data-address>Adresă (stradă, număr, bloc, apartament)<input class="field" name="address" autocomplete="street-address" required><span class="err">Completează adresa.</span></label>
+        <label class="chk"><input type="checkbox" name="company" data-company-toggle> Vreau factură pe firmă</label>
+        <div class="form-grid" data-company hidden>
+          <label class="fl">Denumire firmă<input class="field" name="companyName"><span class="err">Completează denumirea.</span></label>
+          <label class="fl">CUI<input class="field" name="companyCui"><span class="err">Completează CUI-ul.</span></label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Metoda de livrare</h2>
+        <label class="opt"><input type="radio" name="delivery" value="address" checked><span><strong>Curier {{ site.shipping.carrier }} la adresă</strong><small>Livrare în {{ site.shipping.days }}</small></span><span class="cost" data-ship-label></span></label>
+        <label class="opt"><input type="radio" name="delivery" value="easybox"><span><strong>{{ site.shipping.carrier }} easybox</strong><small>Ridici coletul dintr-un locker</small></span><span class="cost" data-ship-label></span></label>
+        <label class="fl" data-easybox hidden>Easybox ales (adresa sau denumirea lockerului)<input class="field" name="easybox" placeholder="ex. easybox Lidl Florești, Str. Avram Iancu"><span class="err">Spune-ne ce easybox preferi.</span></label>
+        <small style="color:var(--muted-2)">Pentru comenzi sub {{ site.shipping.freeOver }} lei, transportul costă {{ site.shipping.cost|lei }}.</small>
+      </div>
+
+      <div class="panel">
+        <h2>Metoda de plată</h2>
+        <label class="opt"><input type="radio" name="payment" value="cod" checked><span><strong>Plata la livrare (ramburs)</strong><small>Plătești curierului la primirea coletului</small></span></label>
+        <label class="opt"><input type="radio" name="payment" value="transfer"><span><strong>Transfer bancar</strong><small>Primești pe email datele de plată; expediem după încasare</small></span></label>
+        <label class="fl">Observații pentru comandă (opțional)<textarea class="field" name="notes" rows="3" maxlength="1000"></textarea></label>
+      </div>
+    </div>
+
+    <aside class="summary" aria-label="Sumarul comenzii">
+      <h2>Sumar comandă</h2>
+      <div class="row"><span data-sum-label>Produse</span><span data-sum-sub>0,00 lei</span></div>
+      <div class="row"><span>Transport {{ site.shipping.carrier }}</span><span data-sum-ship>—</span></div>
+      <div class="row total"><strong>Total de plată</strong><strong data-sum-total>0,00 lei</strong></div>
+      <small>Firma nu este plătitoare de TVA. Nu există alte costuri.</small>
+      <label><input type="checkbox" name="terms" required> <span>Am citit și accept <a href="/termeni-si-conditii/" target="_blank">Termenii și condițiile</a> și <a href="/confidentialitate/" target="_blank">Politica de confidențialitate</a>. *</span></label>
+      <label style="color:#D5DDD3"><input type="checkbox" name="newsletter"> <span>Vreau să primesc oferte pe email (opțional).</span></label>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+      <div class="form-msg" data-form-msg role="alert"></div>
+      <button class="btn btn-cart" type="submit" data-submit>Plasează comanda</button>
+      <small>Ai dreptul să te retragi din contract în 14 zile de la primire, fără să justifici decizia. Costul transportului de retur, {{ site.shipping.returnCost|lei }}, este suportat de client.</small>
+    </aside>
+  </form>
+</div>
+{% endblock %}

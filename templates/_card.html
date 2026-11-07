@@ -1,0 +1,13 @@
+{% macro card(p) -%}
+<article class="card{% if not p.inStock %} is-out{% endif %}" data-sku="{{ p.sku }}" data-price="{{ p.price }}" data-sub="{{ p.sub or '' }}" data-stock="{{ 1 if p.inStock else 0 }}" data-name="{{ p.name }}" data-off="{{ p.off or 0 }}">
+  <a class="card-img" href="/produs/{{ p.slug }}/">
+    <img src="/img/p/{{ p.images[0] }}" alt="{{ p.name }}" loading="lazy" width="500" height="500">
+    {% if not p.inStock %}<span class="badge out">Stoc epuizat</span>{% elif p.off %}<span class="badge">−{{ p.off }}%</span>{% endif %}
+  </a>
+  <span class="label">{{ p.sub or p.categoryName }}</span>
+  <h3><a href="/produs/{{ p.slug }}/">{{ p.name }}</a></h3>
+  <div class="price"><span class="now">{{ p.price|lei }}</span>{% if p.oldPrice %}<s>{{ p.oldPrice|lei }}</s>{% endif %}</div>
+  {% if p.inStock %}<button class="btn btn-cart" data-add="{{ p.sku }}">Adaugă în coș</button>
+  {% else %}<a class="btn btn-ghost" href="tel:{{ site.contact.phoneHref }}">Întreabă de stoc</a>{% endif %}
+</article>
+{%- endmacro %}

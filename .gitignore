@@ -1,0 +1,7 @@
+dist/
+.wrangler/
+.dev.vars
+node_modules/
+functions/api/_catalog.json
+functions/api/_shop.json
+qr-autentificare.png

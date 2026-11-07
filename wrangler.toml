@@ -1,0 +1,11 @@
+name = "magazin-horticol"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "magazin-horticol-comenzi"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# Secrete (se setează din panoul Cloudflare sau cu `wrangler pages secret put`):
+# RESEND_API_KEY, MAIL_FROM (ex. "magazin-horticol.ro <comenzi@magazin-horticol.ro>"), NOTIFY_EMAIL, BANK_DETAILS

@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% from "_card.html" import card with context %}
+{% block title %}{{ cat.name }} | {{ site.name }}{% endblock %}
+{% block desc %}{{ cat.intro }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  <nav class="crumbs" aria-label="Navigare"><a href="/">Acasă</a><span aria-hidden="true">/</span><span>{{ cat.name }}</span></nav>
+  <div class="page-head"><h1>{{ cat.name }}</h1><p>{{ cat.intro }}</p></div>
+  <div class="listing" data-listing>
+    <button class="btn btn-ghost filters-toggle" data-filters-toggle aria-expanded="false">Filtre</button>
+    <aside class="filters" aria-label="Filtre" data-filters>
+      {% if subs %}
+      <fieldset><legend>Subcategorie</legend>
+        {% for s in subs %}<label class="chk"><input type="checkbox" value="{{ s.name }}" data-f-sub> {{ s.name }} <em>{{ s.n }}</em></label>{% endfor %}
+      </fieldset>
+      {% endif %}
+      <fieldset><legend>Preț (lei)</legend>
+        <div class="range">
+          <label>De la<input class="field" type="number" inputmode="decimal" min="0" placeholder="{{ pmin }}" data-f-min></label>
+          <label>Până la<input class="field" type="number" inputmode="decimal" min="0" placeholder="{{ pmax }}" data-f-max></label>
+        </div>
+      </fieldset>
+      <label class="chk"><input type="checkbox" data-f-stock> Doar produse în stoc</label>
+    </aside>
+    <div class="results">
+      <div class="toolbar"><span data-count>{{ products|length }} {{ 'produs' if products|length == 1 else 'produse' }}</span>
+        <label>Sortează <select data-sort>
+          <option value="rec">Recomandate</option><option value="pa">Preț crescător</option><option value="pd">Preț descrescător</option><option value="off">Cele mai mari reduceri</option>
+        </select></label></div>
+      <div class="grid" data-grid>{% for p in products %}{{ card(p) }}{% endfor %}</div>
+      <div class="empty" data-empty hidden>Niciun produs nu se potrivește filtrelor alese.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+Livrare și plată
+<h2>Livrare</h2>
+<p>Livrăm în toată România prin curierul {{ site.shipping.carrier }}, la adresă sau într-un easybox {{ site.shipping.carrier }}. Comenzile confirmate până la ora 14:00 în zilele lucrătoare se predau curierului în aceeași zi sau în ziua lucrătoare următoare. Termenul obișnuit de livrare este de {{ site.shipping.days }}.</p>
+<ul>
+<li>Comenzi de peste {{ site.shipping.freeOver }} lei: livrare gratuită.</li>
+<li>Comenzi sub {{ site.shipping.freeOver }} lei: {{ site.shipping.cost|lei }}.</li>
+</ul>
+<p>Costul transportului apare separat în coș, înainte de plasarea comenzii. Nu există alte costuri ascunse.</p>
+<h2>Plată</h2>
+<ul>
+<li><strong>Ramburs (plata la livrare):</strong> plătești curierului la primirea coletului.</li>
+<li><strong>Transfer bancar:</strong> primești pe email datele de plată; expediem după confirmarea plății.</li>
+</ul>
+<p>Prețurile afișate sunt prețuri finale. {{ site.company.name }} nu este plătitoare de TVA. Factura se emite pe persoana fizică sau, la cerere, pe firmă.</p>
+<h2>Întrebări</h2>
+<p>Telefon <a href="tel:{{ site.contact.phoneHref }}">{{ site.contact.phone }}</a> · email <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a>.</p>

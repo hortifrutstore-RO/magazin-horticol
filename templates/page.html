@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} | {{ site.name }}{% endblock %}
+{% block head %}{% if page.noindex %}<meta name="robots" content="noindex">{% endif %}{% endblock %}
+{% block main %}
+<div class="wrap text-page">
+  <nav class="crumbs" aria-label="Navigare"><a href="/">Acasă</a><span aria-hidden="true">/</span><span>{{ page.title }}</span></nav>
+  <h1>{{ page.title }}</h1>
+  <div class="prose">{{ page.body|safe }}</div>
+</div>
+{% endblock %}

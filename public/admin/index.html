@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Panou · magazin-horticol.ro</title>
+<link rel="stylesheet" href="/css/site.css">
+<link rel="stylesheet" href="/admin/admin.css">
+<link rel="icon" href="/img/site/favicon.png">
+</head>
+<body class="adm">
+<div id="login" class="login" hidden>
+  <form class="login-box" id="loginForm">
+    <img src="/img/site/logo.png" alt="HORTIFRUT" width="180" height="53">
+    <h1>Panou de administrare</h1>
+    <label class="fl">Parolă<input class="field" type="password" name="password" autocomplete="current-password" required></label>
+    <label class="fl">Cod din aplicația de autentificare<input class="field" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required placeholder="6 cifre"></label>
+    <div class="form-msg" id="loginMsg" role="alert"></div>
+    <button class="btn" type="submit">Intră în panou</button>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="adm-top">
+    <div class="adm-top-in">
+      <a href="/" target="_blank" class="adm-logo"><img src="/img/site/logo.png" alt="HORTIFRUT" height="40"></a>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="orders" aria-selected="true">Comenzi <span class="pill" id="newCount" hidden></span></button>
+        <button role="tab" data-tab="products">Produse</button>
+        <button role="tab" data-tab="home">Prima pagină</button>
+        <button role="tab" data-tab="search">Căutare</button>
+      </nav>
+      <button class="link" id="logout">Ieșire</button>
+    </div>
+  </header>
+
+  <div class="savebar" id="savebar" hidden>
+    <span id="saveText">Ai modificări nesalvate</span>
+    <button class="btn btn-ghost" id="discard">Renunță</button>
+    <button class="btn btn-accent" id="save">Salvează pe site</button>
+  </div>
+  <div class="note" id="deployNote" hidden>Salvat. Modificările apar pe site în 1–2 minute.</div>
+
+  <main class="adm-main">
+    <!-- COMENZI -->
+    <section data-view="orders">
+      <div class="adm-head"><h1>Comenzi</h1><button class="btn btn-ghost" id="reloadOrders">Reîncarcă</button></div>
+      <div class="chips" id="orderFilters"></div>
+      <div id="orders" class="orders"></div>
+    </section>
+
+    <!-- PRODUSE -->
+    <section data-view="products" hidden>
+      <div class="adm-head"><h1>Produse</h1><button class="btn" id="newProduct">+ Produs nou</button></div>
+      <div class="adm-filters">
+        <input class="field" id="pSearch" type="search" placeholder="Caută după nume sau cod">
+        <select class="field" id="pCat"><option value="">Toate categoriile</option></select>
+        <select class="field" id="pFilter"><option value="">Toate</option><option value="out">Stoc epuizat</option><option value="feat">În caruselul de pe prima pagină</option><option value="sale">Cu reducere</option></select>
+      </div>
+      <div id="plist" class="plist"></div>
+    </section>
+
+    <!-- PRIMA PAGINĂ -->
+    <section data-view="home" hidden>
+      <div class="adm-head"><h1>Prima pagină</h1></div>
+      <div class="cardx">
+        <h2>Banda de sus</h2>
+        <label class="fl">Text<input class="field" data-s="announcement"></label>
+      </div>
+      <div class="cardx">
+        <h2>Banner principal</h2>
+        <div class="img-pick"><img data-s-img="hero.image" alt=""><div><label class="btn btn-ghost">Schimbă poza<input type="file" accept="image/*" data-upload-site="hero.image" hidden></label><p class="hint">Recomandat: poză verticală sau pătrată, cel puțin 1000 px.</p></div></div>
+        <label class="fl">Text mic deasupra titlului<input class="field" data-s="hero.eyebrow"></label>
+        <label class="fl">Titlu<input class="field" data-s="hero.title"></label>
+        <label class="fl">Text<textarea class="field" rows="2" data-s="hero.text"></textarea></label>
+        <label class="fl">Descrierea pozei (pentru Google și accesibilitate)<input class="field" data-s="hero.imageAlt"></label>
+        <div class="form-grid">
+          <label class="fl">Buton 1 – text<input class="field" data-s="hero.cta.label"></label>
+          <label class="fl">Buton 1 – link<input class="field" data-s="hero.cta.href" placeholder="/categorie/foarfeci-barnel/"></label>
+          <label class="fl">Buton 2 – text<input class="field" data-s="hero.cta2.label"></label>
+          <label class="fl">Buton 2 – link<input class="field" data-s="hero.cta2.href"></label>
+        </div>
+      </div>
+      <div class="cardx">
+        <h2>Carusel produse</h2>
+        <label class="fl">Titlu secțiune<input class="field" data-s="featuredTitle"></label>
+        <p class="hint">Produsele din carusel le alegi din tabul <b>Produse</b> (steluța), iar ordinea de mai jos:</p>
+        <div id="featList" class="featlist"></div>
+      </div>
+      <div class="cardx">
+        <h2>Cele 4 avantaje</h2>
+        <div id="perks" class="form-grid"></div>
+      </div>
+      <div class="cardx">
+        <h2>Banda Barnel</h2>
+        <div class="img-pick"><img data-s-img="barnelBand.image" alt=""><div><label class="btn btn-ghost">Schimbă poza<input type="file" accept="image/*" data-upload-site="barnelBand.image" hidden></label><p class="hint">Recomandat: poză orizontală, cel puțin 1600 px lățime.</p></div></div>
+        <label class="fl">Text mic<input class="field" data-s="barnelBand.eyebrow"></label>
+        <label class="fl">Titlu<input class="field" data-s="barnelBand.title"></label>
+        <label class="fl">Text<textarea class="field" rows="2" data-s="barnelBand.text"></textarea></label>
+        <label class="fl">Link buton<input class="field" data-s="barnelBand.href"></label>
+      </div>
+      <div class="cardx">
+        <h2>Categorii</h2>
+        <div id="catEdit"></div>
+      </div>
+      <div class="cardx">
+        <h2>Transport</h2>
+        <div class="form-grid">
+          <label class="fl">Livrare gratuită peste (lei)<input class="field" type="number" step="0.01" data-s="shipping.freeOver" data-num></label>
+          <label class="fl">Cost transport (lei)<input class="field" type="number" step="0.01" data-s="shipping.cost" data-num></label>
+          <label class="fl">Cost retur (lei)<input class="field" type="number" step="0.01" data-s="shipping.returnCost" data-num></label>
+        </div>
+        <label class="fl">Link urmărire colet ({awb} se înlocuiește cu numărul AWB)<input class="field" data-s="shipping.trackingUrl"></label>
+        <h2 style="margin-top:12px">Google</h2>
+        <div class="form-grid">
+          <label class="fl">Google Analytics (G-…)<input class="field" data-s="analytics.ga4" placeholder="G-XXXXXXX"></label>
+          <label class="fl">Google Ads (AW-…)<input class="field" data-s="analytics.googleAds" placeholder="AW-123456789"></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- CĂUTARE -->
+    <section data-view="search" hidden>
+      <div class="adm-head"><h1>Căutare</h1></div>
+      <div class="cardx">
+        <h2>Căutate des</h2>
+        <p class="hint">Apar când clientul dă clic în bara de căutare. Separă cu virgulă.</p>
+        <input class="field" id="popular">
+      </div>
+      <div class="cardx">
+        <h2>Sinonime</h2>
+        <p class="hint">Câte un grup pe rând, cuvintele separate cu virgulă. Oricare cuvânt din grup găsește produsele care conțin un alt cuvânt din grup. Diacriticele nu contează.</p>
+        <textarea class="field mono" id="synonyms" rows="14"></textarea>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Editor produs -->
+<dialog id="pdlg" class="pdlg">
+  <form method="dialog" class="pdlg-in" id="pform">
+    <div class="pdlg-head"><h2 id="pdlgTitle">Produs</h2><button class="link" value="cancel" formnovalidate aria-label="Închide">✕</button></div>
+    <div class="pdlg-body">
+      <div class="imgs" id="pimgs"></div>
+      <label class="btn btn-ghost upl">+ Adaugă poze<input type="file" accept="image/*" multiple id="pupload" hidden></label>
+      <p class="hint">Prima poză este cea principală. Pozele se aduc automat la format pătrat, pe fundal alb.</p>
+      <label class="fl">Nume<input class="field" name="name" required></label>
+      <div class="form-grid">
+        <label class="fl">Preț (lei)<input class="field" name="price" type="number" step="0.01" min="0" required></label>
+        <label class="fl">Preț vechi, tăiat (opțional)<input class="field" name="oldPrice" type="number" step="0.01" min="0"></label>
+        <label class="fl">Cod produs<input class="field" name="sku" required></label>
+      </div>
+      <div class="form-grid">
+        <label class="fl">Categorie<select class="field" name="category" id="pdCat"></select></label>
+        <label class="fl">Subcategorie (opțional)<input class="field" name="sub" list="subs"></label>
+        <label class="fl">Greutate (kg, pentru AWB)<input class="field" name="weight" type="number" step="0.01" min="0"></label>
+      </div>
+      <datalist id="subs"></datalist>
+      <div class="toggles">
+        <label class="chk"><input type="checkbox" name="inStock"> În stoc</label>
+        <label class="chk"><input type="checkbox" name="featured"> În caruselul de pe prima pagină</label>
+      </div>
+      <label class="fl">Descriere scurtă (apare sub titlu)<textarea class="field" name="short" rows="3" maxlength="400"></textarea></label>
+      <div class="fl">Descriere
+        <div class="rte-bar"><button type="button" data-cmd="bold"><b>B</b></button><button type="button" data-cmd="insertUnorderedList">• Listă</button><button type="button" data-cmd="formatBlock" data-arg="h3">Subtitlu</button><button type="button" data-cmd="formatBlock" data-arg="p">Paragraf</button></div>
+        <div class="field rte" id="pdesc" contenteditable="true"></div>
+      </div>
+      <details><summary>Avansat</summary>
+        <label class="fl">Adresa paginii (după /produs/)<input class="field" name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label>
+        <p class="hint">Schimbă adresa doar dacă e necesar: linkurile vechi spre produs nu vor mai funcționa.</p>
+      </details>
+      <div class="form-msg" id="pmsg" role="alert"></div>
+    </div>
+    <div class="pdlg-foot">
+      <button class="link danger" type="button" id="pdel">Șterge produsul</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost" value="cancel" formnovalidate>Anulează</button>
+      <button class="btn" id="papply" value="ok">Aplică</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" data-toast role="status" aria-live="polite"></div>
+<script src="/admin/admin.js"></script>
+</body>
+</html>

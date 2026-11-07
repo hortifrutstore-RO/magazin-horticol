@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ site.name }}{% endblock %}</title>
+<meta name="description" content="{% block desc %}Unelte profesionale pentru livadă și grădină: foarfeci și fierăstraie Barnel, unelte de recoltat, mănuși. Livrare Sameday în 24–48 h.{% endblock %}">
+<link rel="canonical" href="{{ site.url }}{{ path }}">
+<link rel="preload" href="/fonts/fraunces-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css?v={{ v }}">
+<link rel="icon" href="/img/site/favicon.png">
+<meta property="og:site_name" content="{{ site.name }}">
+<meta property="og:title" content="{{ self.title() }}">
+{% block og %}<meta property="og:image" content="{{ site.url }}{{ site.hero.image }}">{% endblock %}
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied'});
+window.SITE={freeOver:{{ site.shipping.freeOver }},ship:{{ site.shipping.cost }},ga4:"{{ site.analytics.ga4 }}",ads:"{{ site.analytics.googleAds }}",popular:{{ site.popularSearches|tojson }},syn:{{ site.synonyms|tojson }}};
+</script>
+{% block head %}{% endblock %}
+</head>
+<body>
+<a class="sr" href="#main">Sari la conținut</a>
+<div class="announce"><i aria-hidden="true"></i>{{ site.announcement }}</div>
+<header class="site-header">
+  <div class="wrap hdr">
+    <a class="logo" href="/" aria-label="HORTIFRUT magazin-horticol.ro, prima pagină"><img src="/img/site/logo.png" alt="HORTIFRUT magazin-horticol.ro" width="190" height="56"></a>
+    <div class="search" data-search>
+      <form role="search" action="/cautare/" method="get" autocomplete="off">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4A5F52" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <label class="sr" for="q">Caută produse</label>
+        <input id="q" name="q" type="search" placeholder="Caută foarfeci, fierăstraie, mănuși…" aria-autocomplete="list" aria-controls="suggest" aria-expanded="false">
+        <button type="submit">Caută</button>
+      </form>
+      <div class="suggest" id="suggest" role="listbox" aria-label="Sugestii"></div>
+    </div>
+    <a class="cart-link" href="/cos/" aria-label="Coșul de cumpărături">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      <span class="cart-count" data-cart-count data-n="0">0</span>
+    </a>
+  </div>
+  <nav class="wrap nav" aria-label="Categorii">
+    {% for c in site.categories %}<a href="/categorie/{{ c.slug }}/"{% if active_cat == c.slug %} aria-current="page"{% endif %}>{{ c.name }}</a>
+    {% endfor %}
+  </nav>
+</header>
+<main id="main">
+{% block main %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <img src="/img/site/logo.png" alt="" width="170" height="50" style="background:#F7F3EA;border-radius:6px;padding:6px;margin-bottom:14px">
+      <p>Unelte profesionale pentru livadă, vie și grădină.</p>
+    </div>
+    <div>
+      <strong>Magazin</strong>
+      {% for c in site.categories %}<a href="/categorie/{{ c.slug }}/">{{ c.name }}</a>{% endfor %}
+    </div>
+    <div>
+      <strong>Informații</strong>
+      <a href="/livrare-si-plata/">Livrare și plată</a>
+      <a href="/retur/">Retur în 14 zile</a>
+      <a href="/termeni-si-conditii/">Termeni și condiții</a>
+      <a href="/confidentialitate/">Politica de confidențialitate</a>
+      <a href="/cookie-uri/">Politica de cookie-uri</a>
+      <a href="#" data-cookie-settings>Setări cookie-uri</a>
+      <a href="https://anpc.ro/ce-este-sal/" rel="noopener" target="_blank">ANPC – Soluționarea alternativă a litigiilor</a>
+    </div>
+    <div>
+      <strong>Contact</strong>
+      <a href="tel:{{ site.contact.phoneHref }}">{{ site.contact.phone }}</a>
+      <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a>
+      <p>{{ site.company.name }}</p>
+      <p>CUI {{ site.company.cui }} · {{ site.company.reg }}</p>
+      <p>Capital social: {{ site.company.capital }}</p>
+      <p>{{ site.company.address }}</p>
+    </div>
+  </div>
+  <div class="foot-bottom"><div class="wrap"><span>© {{ year }} {{ site.company.name }} · {{ site.name }}</span><span>Firma nu este plătitoare de TVA. Prețurile afișate sunt prețuri finale.</span></div></div>
+</footer>
+<div class="cookie" role="dialog" aria-labelledby="ck-t" data-cookie>
+  <strong id="ck-t" class="serif" style="font-size:20px">Cookie-uri</strong>
+  <p>Folosim cookie-uri necesare pentru coș și, doar cu acordul tău, cookie-uri de analiză și marketing (Google), ca să măsurăm reclamele. Detalii în <a href="/cookie-uri/">Politica de cookie-uri</a>.</p>
+  <div class="btns"><button class="btn" data-ck="all">Accept toate</button><button class="btn btn-ghost" data-ck="none">Doar necesare</button></div>
+</div>
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+<script src="/js/app.js?v={{ v }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
