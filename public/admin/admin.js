@@ -130,7 +130,7 @@ function rowHtml(p, i) {
     <img src="${esc(imgUrl(p.images[0]))}" alt="" loading="lazy">
     <div class="pn" data-edit><strong>${esc(p.name)}</strong><small>${esc(catName(p.category))}${p.sub ? ' · ' + esc(p.sub) : ''} · cod ${esc(p.sku)}</small></div>
     <span class="pp">${lei(p.price)}${p.oldPrice ? `<s>${lei(p.oldPrice)}</s>` : ''}</span>
-    <button class="stockbtn${p.inStock ? '' : ' out'}" data-stock title="Schimbă stocul">${p.inStock ? 'În stoc' : 'Epuizat'}</button>
+    <button class="stockbtn${p.inStock ? '' : ' out'}" data-stock title="Schimbă stocul">${p.inStock ? (p.stock ? 'Stoc: ' + p.stock : 'În stoc') : 'Epuizat'}</button>
     <button class="iconbtn${p.featured ? ' on' : ''}" data-feat title="${p.featured ? 'Scoate din carusel' : 'Pune în caruselul de pe prima pagină'}" aria-label="Carusel">★</button>
   </div>`;
 }
@@ -143,7 +143,7 @@ function listProducts() {
 ['#pSearch', '#pCat', '#pFilter'].forEach(s => $(s).addEventListener('input', listProducts));
 $('#plist').addEventListener('click', e => {
   const row = e.target.closest('.prow'); if (!row) return; const p = D.products[row.dataset.i];
-  if (e.target.closest('[data-stock]')) { p.inStock = !p.inStock; markDirty('p'); row.outerHTML = rowHtml(p, row.dataset.i); $(`.prow[data-i="${row.dataset.i}"]`).classList.add('dirty'); return; }
+  if (e.target.closest('[data-stock]')) { p.inStock = !p.inStock; p.stock = p.inStock ? null : 0; markDirty('p'); row.outerHTML = rowHtml(p, row.dataset.i); $(`.prow[data-i="${row.dataset.i}"]`).classList.add('dirty'); return; }
   if (e.target.closest('[data-feat]')) { p.featured = !p.featured; if (p.featured) p.featuredOrder = Math.max(0, ...D.products.map(x => x.featuredOrder || 0)) + 1; markDirty('p'); row.outerHTML = rowHtml(p, row.dataset.i); $(`.prow[data-i="${row.dataset.i}"]`).classList.add('dirty'); return; }
   if (e.target.closest('[data-edit]') || e.target.tagName === 'IMG') openEditor(+row.dataset.i);
 });
@@ -151,10 +151,12 @@ $('#plist').addEventListener('click', e => {
 /* ---------- editor produs ---------- */
 const dlg = $('#pdlg'), pf = $('#pform'); let editIdx = null, editImgs = [];
 function openEditor(i) {
-  editIdx = i; const isNew = i === null; const p = isNew ? { name: '', price: '', oldPrice: '', sku: '', slug: '', category: $('#pCat').value || D.site.categories[0].slug, sub: '', inStock: true, featured: false, short: '', description: '', images: [], weight: '' } : D.products[i];
+  editIdx = i; const isNew = i === null; const p = isNew ? { name: '', price: '', oldPrice: '', sku: '', slug: '', category: $('#pCat').value || D.site.categories[0].slug, sub: '', inStock: true, stock: null, featured: false, short: '', description: '', images: [], weight: null } : D.products[i];
   $('#pdlgTitle').textContent = isNew ? 'Produs nou' : 'Editează produsul';
-  for (const k of ['name', 'price', 'oldPrice', 'sku', 'slug', 'category', 'sub', 'short', 'weight']) pf[k].value = p[k] ?? '';
-  pf.inStock.checked = !!p.inStock; pf.featured.checked = !!p.featured; $('#pdesc').innerHTML = p.description || '';
+  for (const k of ['name', 'price', 'oldPrice', 'sku', 'slug', 'category', 'sub', 'short']) pf[k].value = p[k] ?? '';
+  pf.stock.value = p.inStock ? (p.stock ?? '') : 0;
+  pf.weightG.value = p.weight ? Math.round(p.weight * 1000) : '';
+  pf.featured.checked = !!p.featured; $('#pdesc').innerHTML = p.description || '';
   editImgs = p.images.slice(); drawImgs(); $('#pdel').hidden = isNew; $('#pmsg').classList.remove('show');
   pf.dataset.new = isNew ? '1' : ''; dlg.showModal();
 }
@@ -195,8 +197,10 @@ pf.addEventListener('submit', e => {
   if (dupe) return err(`Codul sau adresa sunt deja folosite la „${dupe.name}”.`);
   const p = editIdx === null ? {} : D.products[editIdx];
   Object.assign(p, { name: pf.name.value.trim(), price, oldPrice: old > price ? old : null, sku: pf.sku.value.trim(), slug: pf.slug.value, category: pf.category.value,
-    categoryName: catName(pf.category.value), sub: pf.sub.value.trim() || null, inStock: pf.inStock.checked, short: pf.short.value.trim(),
-    description: $('#pdesc').innerHTML, images: editImgs.slice(), weight: parseFloat(pf.weight.value) || null });
+    categoryName: catName(pf.category.value), sub: pf.sub.value.trim() || null, short: pf.short.value.trim(),
+    stock: pf.stock.value === '' ? null : Math.max(0, parseInt(pf.stock.value, 10) || 0),
+    description: $('#pdesc').innerHTML, images: editImgs.slice(), weight: pf.weightG.value ? Math.round(parseFloat(pf.weightG.value)) / 1000 : null });
+  p.inStock = p.stock === null || p.stock > 0;
   if (pf.featured.checked && !p.featured) p.featuredOrder = Math.max(0, ...D.products.map(x => x.featuredOrder || 0)) + 1;
   p.featured = pf.featured.checked;
   if (editIdx === null) D.products.push(p);

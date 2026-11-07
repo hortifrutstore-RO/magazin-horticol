@@ -20,7 +20,8 @@ export function cleanProducts(list, catNames = {}) {
     const o = {
       sku: str(p.sku, 40), slug: str(p.slug, 120).toLowerCase(), name: str(p.name, 200), category: str(p.category, 60),
       categoryName: str(p.categoryName, 80), sub: p.sub ? str(p.sub, 80) : null, price: num(p.price),
-      oldPrice: p.oldPrice ? num(p.oldPrice) : null, inStock: !!p.inStock, short: str(p.short, 400),
+      oldPrice: p.oldPrice ? num(p.oldPrice) : null, inStock: !!p.inStock,
+      stock: p.stock === null || p.stock === undefined || p.stock === '' ? null : Math.max(0, Math.min(100000, parseInt(p.stock, 10) || 0)), short: str(p.short, 400),
       description: cleanHtml(p.description), images: (Array.isArray(p.images) ? p.images : []).filter(x => IMG.test(x)).slice(0, 20),
       weight: p.weight ? num(p.weight) : null, featured: !!p.featured, featuredOrder: parseInt(p.featuredOrder, 10) || 0, oldUrl: p.oldUrl ? str(p.oldUrl, 200) : null
     };
@@ -30,6 +31,7 @@ export function cleanProducts(list, catNames = {}) {
     if (!SLUG.test(o.slug)) return { error: `Adresa produsului „${who}” poate conține doar litere mici, cifre și cratimă.` };
     if (o.price === null || o.price <= 0) return { error: `Preț invalid la „${who}”.` };
     if (o.oldPrice !== null && o.oldPrice <= o.price) o.oldPrice = null;
+    if (o.stock !== null) o.inStock = o.stock > 0;
     if (!o.images.length) return { error: `Produsul „${who}” are nevoie de cel puțin o poză.` };
     if (skus.has(o.sku)) return { error: `Codul ${o.sku} apare de două ori.` };
     if (slugs.has(o.slug)) return { error: `Adresa ${o.slug} apare de două ori.` };

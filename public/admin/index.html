@@ -149,16 +149,16 @@
       <div class="form-grid">
         <label class="fl">Preț (lei)<input class="field" name="price" type="number" step="0.01" min="0" required></label>
         <label class="fl">Preț vechi, tăiat (opțional)<input class="field" name="oldPrice" type="number" step="0.01" min="0"></label>
-        <label class="fl">Cod produs<input class="field" name="sku" required></label>
+        <label class="fl">Stoc (bucăți)<input class="field" name="stock" type="number" step="1" min="0" placeholder="în stoc"><small class="hint">0 = stoc epuizat · gol = în stoc, fără număr</small></label>
       </div>
       <div class="form-grid">
         <label class="fl">Categorie<select class="field" name="category" id="pdCat"></select></label>
         <label class="fl">Subcategorie (opțional)<input class="field" name="sub" list="subs"></label>
-        <label class="fl">Greutate (kg, pentru AWB)<input class="field" name="weight" type="number" step="0.01" min="0"></label>
+        <label class="fl">Greutate cu ambalaj (grame, pentru AWB)<input class="field" name="weightG" type="number" step="1" min="0"></label>
       </div>
+      <label class="fl">Cod produs<input class="field" name="sku" required></label>
       <datalist id="subs"></datalist>
       <div class="toggles">
-        <label class="chk"><input type="checkbox" name="inStock"> În stoc</label>
         <label class="chk"><input type="checkbox" name="featured"> În caruselul de pe prima pagină</label>
       </div>
       <label class="fl">Descriere scurtă (apare sub titlu)<textarea class="field" name="short" rows="3" maxlength="400"></textarea></label>
