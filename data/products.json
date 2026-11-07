@@ -1,8 +1,30 @@
 [
  {
+  "sku": "1873-1L",
+  "slug": "cy-10-insecticid-profesional-1-litru",
+  "name": "CY 10 insecticid profesional pentru muste, țânțari, gândaci și alte insecte, 1 litru",
+  "category": "anti-daunatori",
+  "categoryName": "Anti-dăunători",
+  "sub": null,
+  "price": 179.0,
+  "oldPrice": null,
+  "inStock": true,
+  "stock": null,
+  "short": "CY 10 este un insecticid concentrat, cu spectru larg de combatere, cu acțiune insecticidă imediată, cu efect de stingere a focarelor şi rezidual",
+  "description": "<p><strong>CY 10</strong> este un insecticid concentrat, cu spectru larg de combatere, cu acțiune insecticidă imediată, cu efect de stingere a focarelor şi rezidual. Formula conţine o cantitate mare de cipermetrină, care este un piretroid foto-stabil ce acționează prin ingestie și contact. </p> <p>La dozele recomandate pentru utilizare, nu irită și nu dăunează plantelor. Produsul durează câteva săptămâni într-un mediu închis sau în zone umbrite. CY10 este eficient în combaterea insectelor zburătoare (cum ar fi muște, viespi, țânțari obișnuiți și țânțari de tigru, muștele de nisip și mlaștini), împotriva insectelor care se hrănesc (gândaci, furnici, păianjeni și purici, insecte, (cum ar fi molii, gândaci de făină) și împotriva dăunătorilor ocazionali.</p> <p>UTILIZARE:<br>CY10 este eficient împotriva tuturor tipurilor de insecte care invadează în mod obișnuit mediile domestice, civile, industriale și zootehnice, cum ar fi casele, industria alimentară, sălile de muls, mijloacele de transport, mediul rural, grajdurile, adăposturile, depozite, școli, spitale, cinematografe, magazine, barăci, hoteluri, restaurante, cantine, centre turistice, stațiuni de coastă și locuri de tabără. Produsul este, de asemenea, recomandat pentru a trata zonele verzi, cum ar fi strazile cu copaci, garduri vii, peluze și tufișuri ornamentale numai pentru controlul tantarilor.</p> <p>CY10 este eficient în combaterea insectelor zburătoare (cum ar fi muște, viespi, țânțari obișnuiți și țânțari de tigru, muștele de nisip și mlaștini), împotriva insectelor care se hrănesc (gândaci, furnici, păianjeni și purici, insecte, (cum ar fi molii, gândaci de făină) și împotriva dăunătorilor ocazionali.</p> <p>CY 10 poate fi aplicat cu ajutorul spray-urilor, echipamentelor de ULV si pulverizatoarelor termice. </p> DOZE: - controlul țânțarilor (Culex, Aedes, Culiseta, Anopheles, etc.): se diluează până la 0,5- 1% în apă - controlul de muște și alte insecte care zboară: se diluează la 1-2 % în apă - controlul tuturor tipurilor de insecte târâtoare: se diluează la 2-3 % în apă<br> COMPOZIŢIE<br>Cipermetrina 10 g<br>Coformulanți o cantitate suficientă pentru 100 g",
+  "images": [
+   "cy-10-insecticidtantari-1.jpg",
+   "cy-10-insecticidtantari-2.jpg"
+  ],
+  "weight": 1,
+  "featured": false,
+  "featuredOrder": 0,
+  "oldUrl": null
+ },
+ {
   "sku": "1873",
   "slug": "cy-10-insecticidtantari",
-  "name": "CY 10 insecticid profesional pentru muste, tantari, gandaci si alte insecte",
+  "name": "CY 10 insecticid profesional pentru muste, țânțari, gândaci și alte insecte, 50 ml",
   "category": "anti-daunatori",
   "categoryName": "Anti-dăunători",
   "sub": null,
