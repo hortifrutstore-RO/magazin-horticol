@@ -112,8 +112,7 @@
       "ferastrau",
       "ferestrau",
       "fierestrau",
-      "joagar",
-      "serrucho"
+      "joagar"
     ],
     [
       "foarfeca",
@@ -127,12 +126,13 @@
       "telescopic",
       "telescopica",
       "prelungitor",
-      "maner lung"
+      "prelungire"
     ],
     [
       "pila",
       "ascutitoare",
-      "ascutit"
+      "ascutit",
+      "ascutire"
     ],
     [
       "manusi",
@@ -145,23 +145,60 @@
     ],
     [
       "insecticid",
-      "spray",
-      "gandaci",
-      "muste",
-      "furnici",
-      "viespi"
-    ],
-    [
-      "tavita",
-      "tavite",
-      "alveolara",
-      "rasaduri"
+      "insecticide",
+      "aerosol"
     ],
     [
       "pardoseala",
       "dala",
       "dale",
-      "podea"
+      "podea",
+      "gresie"
+    ],
+    [
+      "crengi",
+      "creanga",
+      "ramuri",
+      "ramura"
+    ],
+    [
+      "taiat",
+      "taiere",
+      "taie",
+      "taia"
+    ],
+    [
+      "recoltat",
+      "cules",
+      "culegator",
+      "recoltare"
+    ],
+    [
+      "tantari",
+      "tantar"
+    ],
+    [
+      "husa",
+      "toc"
+    ],
+    [
+      "chinga",
+      "ancorare"
+    ],
+    [
+      "vie",
+      "vita"
+    ],
+    [
+      "iarna",
+      "termice",
+      "termic",
+      "termica",
+      "frig"
+    ],
+    [
+      "muste",
+      "musca"
     ]
   ],
   "analytics": {

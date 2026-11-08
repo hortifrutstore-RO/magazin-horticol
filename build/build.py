@@ -86,7 +86,8 @@ open(os.path.join(DIST, '404.html'), 'w', encoding='utf-8').write(env.get_templa
 # Index pentru căutare și coș (public, doar date de afișare)
 os.makedirs(os.path.join(DIST, 'data'), exist_ok=True)
 idx = [dict(sku=p['sku'], slug=p['slug'], name=p['name'], cat=p['categoryName'], catSlug=p['category'], sub=p.get('sub'),
-            price=p['price'], old=p.get('oldPrice'), off=p['off'], inStock=p['inStock'], img=p['images'][0], featured=p.get('featured', False))
+            price=p['price'], old=p.get('oldPrice'), off=p['off'], inStock=p['inStock'], img=p['images'][0], featured=p.get('featured', False),
+            kw=re.sub(r'<[^>]+>', ' ', p.get('short') or '')[:240])
        for p in products]
 json.dump(idx, open(os.path.join(DIST, 'data/search.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 

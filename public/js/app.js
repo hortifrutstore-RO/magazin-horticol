@@ -14,7 +14,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 let CAT = null;
 function catalog() {
   if (!CAT) CAT = Promise.all([fetch('/data/search.json').then(r => r.json()), liveStock()]).then(([list, st]) => {
-    const by = {}; list.forEach(p => { if (p.sku in st) { p.left = st[p.sku]; p.inStock = st[p.sku] > 0; } by[p.sku] = p; p._n = norm([p.name, p.cat, p.sub || '', p.sku].join(' ')); p._w = p._n.split(/\s+/).filter(Boolean); });
+    const by = {}; list.forEach(p => { if (p.sku in st) { p.left = st[p.sku]; p.inStock = st[p.sku] > 0; } by[p.sku] = p; prep(p); });
     return { list, by };
   });
   return CAT;
@@ -93,7 +93,10 @@ if (listing) {
 }
 
 /* ---------- search ---------- */
-const SYN = {}; (S.syn || []).forEach(g => g.forEach(w => SYN[norm(w)] = g.map(norm)));
+/*SEARCH-START*/
+const STOP = new Set('de la cu si sau pentru pt din in pe a al ale o un una cel cea ce care mai fara ptr si'.split(' '));
+function stem(w) { if (w.length < 4 || /\d/.test(w)) return w; return w.replace(/(urile|ului|elor|ilor|ile|ele|uri|ul|ii|ei|ea|le|a|e|i|u|o)$/, ''); }
+const SYN = {}; (S.syn || []).forEach(g => { const st = g.map(w => stem(norm(w))); st.forEach(w => SYN[w] = st.filter(x => x !== w)); });
 function lev(a, b) {
   if (Math.abs(a.length - b.length) > 2) return 9;
   const d = []; for (let i = 0; i <= a.length; i++) d[i] = [i];
@@ -104,30 +107,53 @@ function lev(a, b) {
   }
   return d[a.length][b.length];
 }
-function tokenScore(t, words) {
-  const alts = SYN[t] || [t]; let best = 0, fixed = null;
-  for (const a of alts) for (const w of words) {
-    let s = 0, fuzzy = false;
-    if (w === a) s = 4; else if (w.startsWith(a)) s = 3; else if (a.length >= 3 && w.includes(a)) s = 2;
-    else if (a.length >= 4) { const pre = w.slice(0, Math.max(a.length, 4)); const tol = a.length >= 7 ? 2 : 1; if (lev(a, pre) <= tol || lev(a, w) <= tol) { s = 1.5; fuzzy = true; } }
-    if (a !== t && s) s -= .3;
-    if (s > best) { best = s; fixed = fuzzy ? w : null; }
+const words = s => norm(s || '').split(' ').filter(Boolean).map(w => [w, stem(w)]);
+/* câmpuri cu greutăți: numele contează cel mai mult, categoria cel mai puțin */
+function prep(p) { p._f = [[words(p.name + ' ' + p.sku), 1], [words(p.sub), .45], [words(p.kw), .35], [words(p.cat), .3]]; }
+/* cât de bine se potrivește un cuvânt căutat (t = [cuvânt, rădăcină]) cu un cuvânt din produs */
+function wq(t, w) {
+  const [a, as] = t, [b, bs] = w, code = /\d/.test(a);
+  if (a === b) return [code ? 1.3 : 1];
+  if (!code && as === bs) return [.95];
+  if (b.startsWith(a) && (code || a.length >= 3)) return [.85];
+  if (!code && as.length >= 3 && b.startsWith(as)) return [.8];
+  if (code && a.length >= 3 && b.includes(a)) return [.6];
+  if (!code && a.length >= 4 && b.includes(a)) return [.55];
+  if (!code && a.length >= 4 && !/\d/.test(b)) { const tol = a.length >= 7 ? 2 : 1; if (lev(a, b) <= tol || lev(as, bs) <= tol || lev(a, b.slice(0, a.length)) <= tol - (a.length < 7 ? 0 : 1)) return [.5, b]; }
+  return [0];
+}
+function tokScore(t, p) {
+  let best = 0, fix = null;
+  const alts = [[t, 1]].concat((SYN[t[1]] || []).map(x => [[x, x], .8]));
+  for (const [tt, m] of alts) for (const [ws, wt] of p._f) for (const w of ws) {
+    const [q, f] = wq(tt, w); const s = q * wt * m; if (s > best) { best = s; fix = m === 1 ? f || null : null; }
   }
-  return [best, fixed];
+  return [best, fix];
 }
 function search(idx, q) {
-  const toks = norm(q).split(' ').filter(t => t.length > 1);
+  let raw = norm(q).split(' ').filter(Boolean);
+  for (let i = 0; i < raw.length - 1; i++) if (/^[a-z]$/.test(raw[i]) && /^\d/.test(raw[i + 1])) { raw[i] += raw[i + 1]; raw.splice(i + 1, 1); }
+  let toks = raw.filter(t => t.length > 1 && !STOP.has(t));
+  if (!toks.length) toks = raw.filter(t => t.length > 1);
   if (!toks.length) return { res: [], fix: null };
-  const out = []; const fixes = {};
+  toks = toks.map(t => [t, stem(t)]);
+  const need = toks.length >= 3 ? toks.length - 1 : toks.length;
+  const out = [];
   for (const p of idx.list) {
-    let tot = 0, ok = 0;
-    for (const t of toks) { const [s, f] = tokenScore(t, p._w); if (s) { ok++; tot += s; if (f) fixes[t] = f; } }
-    if (ok === toks.length || (toks.length > 2 && ok >= toks.length - 1)) out.push({ p, s: tot + (p.inStock ? .5 : 0) });
+    if (!p._f) prep(p);
+    let tot = 0, ok = 0; const fx = {};
+    for (const t of toks) { const [s, f] = tokScore(t, p); if (s > .12) { ok++; tot += s; if (f) fx[t[0]] = f; } }
+    if (ok < need) continue;
+    const nm = p._f[0][0]; if (nm.length && wq(toks[0], nm[0])[0] >= .8) tot += .15;
+    out.push({ p, s: tot + (p.inStock ? .05 : 0), fx });
   }
-  out.sort((a, b) => b.s - a.s);
-  const fixedQ = Object.keys(fixes).length ? toks.map(t => fixes[t] || t).join(' ') : null;
-  return { res: out.map(x => x.p), fix: fixedQ };
+  out.sort((a, b) => b.s - a.s || a.p.name.length - b.p.name.length);
+  if (!out.length) return { res: [], fix: null };
+  const top = out[0].s; const res = out.filter(x => x.s >= top * .5);
+  const fx = res[0].fx; const fix = Object.keys(fx).length ? toks.map(t => fx[t[0]] || t[0]).join(' ') : null;
+  return { res: res.map(x => x.p), fix };
 }
+/*SEARCH-END*/
 const recent = { get: () => store.get('recentSearch', []), add(q) { q = q.trim(); if (q.length < 2) return; const r = this.get().filter(x => x !== q); r.unshift(q); store.set('recentSearch', r.slice(0, 5)); }, del(q) { store.set('recentSearch', this.get().filter(x => x !== q)); } };
 const sbox = $('[data-search]');
 if (sbox) {
