@@ -54,6 +54,28 @@ document.addEventListener('click', e => {
   track('add_to_cart', { items: [{ item_id: b.dataset.add, quantity: q }] });
 });
 
+/* ---------- buton „magnet”: se apropie fin de cursor ---------- */
+if (matchMedia('(hover:hover) and (pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+  const R = 70, MX = 7, MY = 5; let px = 0, py = 0, raf = 0; const on = new Set();
+  const step = () => { raf = 0;
+    const near = new Set();
+    for (const b of document.querySelectorAll('.btn-cart')) {
+      const r = b.getBoundingClientRect(); if (r.bottom < -R || r.top > innerHeight + R) continue;
+      const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2);
+      const ox = Math.max(0, Math.abs(dx) - r.width / 2), oy = Math.max(0, Math.abs(dy) - r.height / 2);
+      const d = Math.hypot(ox, oy); if (d > R) continue;
+      const f = 1 - d / R, k = f * f * (3 - 2 * f);
+      b.style.setProperty('--mx', (Math.max(-1, Math.min(1, dx / (r.width / 2 + R))) * MX * k).toFixed(2) + 'px');
+      b.style.setProperty('--my', (Math.max(-1, Math.min(1, dy / (r.height / 2 + R))) * MY * k).toFixed(2) + 'px');
+      b.classList.add('magnet'); near.add(b);
+    }
+    for (const b of on) if (!near.has(b)) { b.classList.remove('magnet'); b.style.setProperty('--mx', '0px'); b.style.setProperty('--my', '0px'); }
+    on.clear(); near.forEach(b => on.add(b));
+  };
+  addEventListener('pointermove', e => { px = e.clientX; py = e.clientY; if (!raf) raf = requestAnimationFrame(step); }, { passive: true });
+  document.addEventListener('pointerleave', () => { px = -1e4; py = -1e4; if (!raf) raf = requestAnimationFrame(step); });
+}
+
 /* ---------- stoc în timp real ---------- */
 liveStock().then(st => {
   $$('.card[data-sku]').forEach(c => { const q = st[c.dataset.sku]; if (q === undefined) return;
