@@ -23,7 +23,7 @@ export function cleanProducts(list, catNames = {}) {
       oldPrice: p.oldPrice ? num(p.oldPrice) : null, inStock: !!p.inStock,
       stock: p.stock === null || p.stock === undefined || p.stock === '' ? null : Math.max(0, Math.min(100000, parseInt(p.stock, 10) || 0)), short: str(p.short, 400),
       description: cleanHtml(p.description), images: (Array.isArray(p.images) ? p.images : []).filter(x => IMG.test(x)).slice(0, 20),
-      weight: p.weight ? num(p.weight) : null, featured: !!p.featured, featuredOrder: parseInt(p.featuredOrder, 10) || 0, oldUrl: p.oldUrl ? str(p.oldUrl, 200) : null
+      weight: p.weight ? num(p.weight) : null, noEasybox: !!p.noEasybox, featured: !!p.featured, featuredOrder: parseInt(p.featuredOrder, 10) || 0, oldUrl: p.oldUrl ? str(p.oldUrl, 200) : null
     };
     const who = o.name || o.sku || '(fără nume)';
     if (!o.sku) return { error: `Produsul „${who}” nu are cod.` };

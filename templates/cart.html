@@ -8,7 +8,7 @@
   <div class="empty" data-cart-empty hidden style="margin:32px 0 96px">Coșul este gol. <a href="/categorie/foarfeci-barnel/">Vezi produsele</a></div>
   <form class="checkout" data-checkout novalidate>
     <div class="co-main">
-      <div class="panel"><h2 data-cart-title>Coșul tău</h2><div data-cart-lines></div></div>
+      <div class="panel"><div class="cart-head"><h2 data-cart-title>Coșul tău</h2><button type="button" class="link-btn" data-cart-clear>Golește coșul</button></div><div data-cart-lines></div></div>
 
       <div class="panel">
         <h2 data-ship-h>Date de livrare</h2>
@@ -31,8 +31,19 @@
       <div class="panel">
         <h2>Metoda de livrare</h2>
         <label class="opt"><input type="radio" name="delivery" value="address" checked><span><strong>Curier {{ site.shipping.carrier }} la adresă</strong><small>Livrare în {{ site.shipping.days }}</small></span><span class="cost" data-ship-label></span></label>
-        <label class="opt"><input type="radio" name="delivery" value="easybox"><span><strong>{{ site.shipping.carrier }} easybox</strong><small>Ridici coletul dintr-un locker</small></span><span class="cost" data-ship-label></span></label>
-        <label class="fl" data-easybox hidden>Easybox ales (adresa sau denumirea lockerului)<input class="field" name="easybox" placeholder="ex. easybox Lidl Florești, Str. Avram Iancu"><span class="err">Spune-ne ce easybox preferi.</span></label>
+        <label class="opt" data-eb-opt><input type="radio" name="delivery" value="easybox"><span><strong>{{ site.shipping.carrier }} easybox</strong><small data-eb-sub>Ridici coletul dintr-un locker</small></span><span class="cost" data-ship-label></span></label>
+        <div class="eb" data-easybox hidden>
+          <div class="eb-map" data-eb-map hidden>
+            <div class="eb-chosen" data-eb-chosen hidden>
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" fill="currentColor"/></svg>
+              <span><strong data-eb-name></strong><small data-eb-addr></small></span>
+            </div>
+            <button type="button" class="btn btn-ghost eb-btn" data-eb-open>Alege easybox pe hartă</button>
+            <span class="eb-err" data-eb-err hidden>Alege easybox-ul din care vrei să ridici coletul.</span>
+            {% for n in ['lockerId','oohType','lockerName','lockerAddress','lockerCity','lockerCounty','lockerZip'] %}<input type="hidden" name="{{ n }}">{% endfor %}
+          </div>
+          <label class="fl" data-eb-text>Easybox ales (adresa sau denumirea lockerului)<input class="field" name="easybox" placeholder="ex. easybox Lidl Florești, Str. Avram Iancu"><span class="err">Spune-ne ce easybox preferi.</span></label>
+        </div>
         <small style="color:var(--muted-2)">Pentru comenzi sub {{ site.shipping.freeOver }} lei, transportul costă {{ site.shipping.cost|lei }}.</small>
       </div>
 

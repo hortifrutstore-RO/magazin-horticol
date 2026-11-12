@@ -46,7 +46,7 @@
     <!-- COMENZI -->
     <section data-view="orders">
       <div class="adm-head"><h1>Comenzi</h1><button class="btn btn-ghost" id="reloadOrders">Reîncarcă</button></div>
-      <div class="chips" id="orderFilters"></div>
+      <div class="ord-tools"><div class="chips" id="orderFilters"></div><input class="field" id="ordSearch" type="search" placeholder="Caută: nume, telefon, nr. comandă, oraș"></div>
       <div id="orders" class="orders"></div>
     </section>
 
@@ -138,6 +138,24 @@
 </div>
 
 <!-- Editor produs -->
+<dialog id="awbDlg" class="pdlg awb-dlg">
+  <form method="dialog" class="pdlg-in" id="awbForm">
+    <div class="pdlg-head"><h2>Emite AWB Sameday</h2><button class="link" value="cancel" formnovalidate>Închide</button></div>
+    <div class="awb-body">
+      <p class="hint" id="awbWho"></p>
+      <div class="awb-grid">
+        <label class="fl">Greutate totală (kg)<input class="field" name="weight" type="number" step="0.1" min="0.1" max="30" required></label>
+        <label class="fl">Număr colete<input class="field" name="parcels" type="number" min="1" max="10" value="1" required></label>
+        <label class="fl">Ramburs (lei)<input class="field" name="cod" type="number" step="0.01" min="0" required></label>
+      </div>
+      <label class="fl">Observații pentru curier (opțional)<input class="field" name="observation" maxlength="200" placeholder="ex. Sunați înainte de livrare"></label>
+      <p class="hint" id="awbSvc"></p>
+      <div class="form-msg" id="awbMsg" role="alert"></div>
+    </div>
+    <div class="awb-foot"><button class="btn btn-ghost" value="cancel" formnovalidate>Renunță</button><button class="btn" id="awbGo" value="ok">Emite AWB</button></div>
+  </form>
+</dialog>
+
 <dialog id="pdlg" class="pdlg">
   <form method="dialog" class="pdlg-in" id="pform">
     <div class="pdlg-head"><h2 id="pdlgTitle">Produs</h2><button class="link" value="cancel" formnovalidate aria-label="Închide">✕</button></div>
@@ -160,6 +178,7 @@
       <datalist id="subs"></datalist>
       <div class="toggles">
         <label class="chk"><input type="checkbox" name="featured"> În caruselul de pe prima pagină</label>
+        <label class="chk"><input type="checkbox" name="noEasybox"> Nu încape în easybox (lung, voluminos sau peste 20 kg)</label>
       </div>
       <label class="fl">Descriere scurtă (apare sub titlu)<textarea class="field" name="short" rows="3" maxlength="400"></textarea></label>
       <div class="fl">Descriere

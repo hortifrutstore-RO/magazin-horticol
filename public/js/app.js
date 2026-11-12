@@ -257,15 +257,59 @@ if (co) (async () => {
     render(); });
   lines.addEventListener('change', e => { if (e.target.matches('[data-qi]')) { cart.setQty(e.target.closest('.line').dataset.sku, parseInt(e.target.value, 10) || 1); render(); } });
   const tglCo = () => { const on = $('[data-company-toggle]').checked; $('[data-company]').hidden = !on; $$('[data-company] input').forEach(i => i.required = on); };
-  const tglEb = () => { const eb = co.delivery.value === 'easybox'; $('[data-easybox]').hidden = !eb; co.easybox.required = eb; $('[data-address]').hidden = eb; co.address.required = !eb; };
+  // Easybox: harta oficială Sameday când integrarea e activă, altfel câmp text.
+  let ebMap = null; const EBK = 'mh-easybox';
+  const ebSet = l => {
+    const f = { lockerId: l.lockerId, oohType: l.oohType ?? 0, lockerName: l.name || '', lockerAddress: l.address || '', lockerCity: l.city || '', lockerCounty: l.county || '', lockerZip: l.postalCode || '' };
+    Object.entries(f).forEach(([k, v]) => co[k].value = v ?? '');
+    co.easybox.value = `${f.lockerName} – ${f.lockerAddress}, ${f.lockerCity}`;
+    $('[data-eb-name]').textContent = f.lockerName; $('[data-eb-addr]').textContent = `${f.lockerAddress}, ${f.lockerCity}, jud. ${f.lockerCounty}`;
+    $('[data-eb-chosen]').hidden = false; $('[data-eb-open]').textContent = 'Schimbă easybox-ul'; $('[data-eb-err]').hidden = true;
+    try { localStorage.setItem(EBK, JSON.stringify(l)); } catch {}
+  };
+  const loadSdk = () => new Promise((ok, no) => { if (window.LockerPlugin) return ok(); const s = document.createElement('script'); s.src = 'https://cdn.sameday.ro/locker-plugin/lockerpluginsdk.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  fetch('/api/easybox').then(r => r.json()).then(c => {
+    if (!c.enabled) return; ebMap = c;
+    $('[data-eb-map]').hidden = false; $('[data-eb-text]').hidden = true; tglEb();
+    try { const l = JSON.parse(localStorage.getItem(EBK) || 'null'); if (l && l.lockerId) ebSet(l); } catch {}
+  }).catch(() => {});
+  $('[data-eb-open]').addEventListener('click', async () => {
+    const b = $('[data-eb-open]'); const t = b.textContent; b.disabled = true; b.textContent = 'Se deschide harta…';
+    try {
+      await loadSdk();
+      const opt = { clientId: ebMap.clientId, apiUsername: ebMap.apiUsername, countryCode: 'RO', langCode: 'ro' };
+      // Harta se blochează dacă primește un oraș gol: îl trimitem doar când e completat (altfel județul sau Bucureștiul).
+      // Centrul hărții: orașul scris > județul ales > orașul aproximat după conexiune (fără cerere de locație) > București.
+      // Harta Sameday înțelege doar orașul (fără oraș se deschide pe București): fără oraș scris, folosim reședința județului ales.
+      const SEAT = {"Alba": "Alba Iulia", "Arad": "Arad", "Argeș": "Pitești", "Bacău": "Bacău", "Bihor": "Oradea", "Bistrița-Năsăud": "Bistrița", "Botoșani": "Botoșani", "Brașov": "Brașov", "Brăila": "Brăila", "București": "București", "Buzău": "Buzău", "Caraș-Severin": "Reșița", "Călărași": "Călărași", "Cluj": "Cluj-Napoca", "Constanța": "Constanța", "Covasna": "Sfântu Gheorghe", "Dâmbovița": "Târgoviște", "Dolj": "Craiova", "Galați": "Galați", "Giurgiu": "Giurgiu", "Gorj": "Târgu Jiu", "Harghita": "Miercurea Ciuc", "Hunedoara": "Deva", "Ialomița": "Slobozia", "Iași": "Iași", "Ilfov": "Voluntari", "Maramureș": "Baia Mare", "Mehedinți": "Drobeta-Turnu Severin", "Mureș": "Târgu Mureș", "Neamț": "Piatra Neamț", "Olt": "Slatina", "Prahova": "Ploiești", "Satu Mare": "Satu Mare", "Sălaj": "Zalău", "Sibiu": "Sibiu", "Suceava": "Suceava", "Teleorman": "Alexandria", "Timiș": "Timișoara", "Tulcea": "Tulcea", "Vaslui": "Vaslui", "Vâlcea": "Râmnicu Vâlcea", "Vrancea": "Focșani"};
+      const typed = co.city.value.trim(), county = co.county.value;
+      opt.city = typed || (county ? SEAT[county] : '') || ebMap.city || 'București';
+      window.LockerPlugin.init(opt);
+      if (window.LockerPlugin.options && (window.LockerPlugin.options.city !== opt.city || window.LockerPlugin.options.county !== opt.county)) window.LockerPlugin.reinitializePlugin(opt);
+      const p = window.LockerPlugin.getInstance(); p.open();
+      p.subscribe(l => { ebSet(l); p.close(); });
+    } catch { b.textContent = 'Harta nu s-a putut încărca. Încearcă din nou.'; b.disabled = false; return; }
+    b.disabled = false; b.textContent = t;
+  });
+  const tglEb = () => { const eb = co.delivery.value === 'easybox'; $('[data-easybox]').hidden = !eb; co.easybox.required = eb && !ebMap; $('[data-address]').hidden = eb; co.address.required = !eb; };
+  // Produse care nu încap în easybox (mânere lungi, dale etc.): varianta easybox se dezactivează.
+  const tglNeb = () => {
+    const big = cart.items().filter(x => idx.by[x.sku] && idx.by[x.sku].neb).map(x => idx.by[x.sku].name);
+    const r = $('input[name=delivery][value=easybox]'); r.disabled = !!big.length; $('[data-eb-opt]').classList.toggle('is-off', !!big.length);
+    $('[data-eb-sub]').textContent = big.length ? 'Indisponibil: ' + (big.length === 1 ? big[0] + ' nu încape' : big.length + ' produse nu încap') + ' în locker' : 'Ridici coletul dintr-un locker';
+    if (big.length && r.checked) { $('input[name=delivery][value=address]').checked = true; tglEb(); }
+  };
+  $('[data-cart-clear]').addEventListener('click', () => { if (confirm('Golești coșul? Toate produsele vor fi scoase.')) { cart.clear(); render(); } });
   $('[data-company-toggle]').addEventListener('change', tglCo); $$('input[name=delivery]').forEach(r => r.addEventListener('change', tglEb));
-  render(); tglCo(); tglEb();
+  render(); tglCo(); tglEb(); tglNeb();
+  lines.addEventListener('click', () => setTimeout(tglNeb, 0));
   co.addEventListener('submit', async e => {
     e.preventDefault();
     const msg = $('[data-form-msg]'); msg.classList.remove('show');
     let bad = null;
     $$('.fl', co).forEach(fl => { const f = $('input,select,textarea', fl); if (!f) return; const inv = !f.closest('[hidden]') && !f.checkValidity(); fl.classList.toggle('invalid', inv); if (inv && !bad) bad = f; });
     if (bad) { bad.focus(); msg.textContent = 'Verifică câmpurile marcate cu roșu.'; msg.classList.add('show'); return; }
+    if (ebMap && co.delivery.value === 'easybox' && !co.lockerId.value) { $('[data-eb-err]').hidden = false; $('[data-eb-open]').focus(); msg.textContent = 'Alege easybox-ul de pe hartă.'; msg.classList.add('show'); return; }
     if (!co.terms.checked) { msg.textContent = 'Trebuie să accepți Termenii și condițiile.'; msg.classList.add('show'); return; }
     const fd = Object.fromEntries(new FormData(co).entries());
     fd.items = cart.items(); fd.company = !!co.company.checked; fd.newsletter = !!co.newsletter.checked; fd.terms = true;

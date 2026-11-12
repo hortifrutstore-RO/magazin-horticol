@@ -313,3 +313,13 @@ h1,h2,.serif{font-family:var(--serif);font-weight:500;color:var(--green);letter-
 .acc-google{display:flex;flex-direction:column;gap:12px;align-items:flex-start;margin-top:6px}
 .acc-or{display:flex;align-items:center;gap:10px;width:100%;color:var(--muted);font-size:13px}
 .acc-or::before,.acc-or::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* easybox + coș */
+.cart-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.eb{margin:4px 0 12px}
+.eb-map{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.eb-chosen{display:flex;gap:12px;align-items:flex-start;background:#FFF0E6;border:1px solid #F5C9A9;border-radius:10px;padding:12px 16px;width:100%;color:var(--accent)}
+.eb-chosen strong{display:block;color:var(--ink);font-size:15px}.eb-chosen small{display:block;color:var(--muted-3);font-size:13px;line-height:1.4}
+.eb-btn{min-height:44px}
+.eb-err{color:#B42318;font-size:13px;font-weight:600}
+.opt.is-off{opacity:.55;cursor:not-allowed}.opt.is-off small{color:#B42318}

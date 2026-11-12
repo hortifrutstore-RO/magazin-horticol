@@ -20,13 +20,18 @@ export async function onRequestPost({ request, env, waitUntil }) {
     payment: b.payment === 'transfer' ? 'transfer' : 'cod', company: !!b.company, companyName: str(b.companyName, 160), companyCui: str(b.companyCui, 20),
     notes: str(b.notes, 1000), newsletter: !!b.newsletter
   };
+  // Easybox ales de pe harta Sameday
+  const lid = parseInt(b.lockerId, 10);
+  const locker = o.delivery === 'easybox' && lid > 0 ? { lockerId: lid, oohType: parseInt(b.oohType, 10) === 1 ? 1 : 0, name: str(b.lockerName, 120),
+    address: str(b.lockerAddress, 250), city: str(b.lockerCity, 80), county: str(b.lockerCounty, 40), postalCode: str(b.lockerZip, 10) } : null;
+  if (locker) o.easybox = `${locker.name} – ${locker.address}, ${locker.city}`.slice(0, 200);
   const errs = [];
   if (o.name.length < 3) errs.push('nume');
   if (!/^[0-9 +().-]{9,}$/.test(o.phone)) errs.push('telefon');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.email)) errs.push('email');
   if (!o.county || !o.city) errs.push('localitate');
   if (o.delivery === 'address' && o.address.length < 5) errs.push('adresă');
-  if (o.delivery === 'easybox' && o.easybox.length < 3) errs.push('easybox');
+  if (o.delivery === 'easybox' && (o.easybox.length < 3 || (env.SAMEDAY_USER && !locker))) errs.push('easybox (alege-l de pe hartă)');
   if (o.company && (!o.companyName || !o.companyCui)) errs.push('date firmă');
   if (b.terms !== true) errs.push('acceptarea termenilor');
   if (errs.length) return json({ ok: false, error: 'Verifică: ' + errs.join(', ') + '.' }, 400);
@@ -35,9 +40,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
   for (const it of Array.isArray(b.items) ? b.items.slice(0, 50) : []) {
     const p = CATALOG[it && it.sku]; const q = Math.max(1, Math.min(99, parseInt(it && it.qty, 10) || 0));
     if (!p || !p.inStock || !q) continue;
-    items.push({ sku: it.sku, name: p.name, model: p.model, img: p.img, url: p.url, price: p.price, qty: q, total: Math.round(p.price * q * 100) / 100 });
+    items.push({ sku: it.sku, name: p.name, model: p.model, img: p.img, url: p.url, w: p.w || null, price: p.price, qty: q, total: Math.round(p.price * q * 100) / 100 });
   }
   if (!items.length) return json({ ok: false, error: 'Coșul este gol sau produsele nu mai sunt disponibile.' }, 400);
+  const big = o.delivery === 'easybox' ? items.filter(i => CATALOG[i.sku].neb) : [];
+  if (big.length) return json({ ok: false, error: 'Nu încap în easybox: ' + big.map(i => i.name).join(', ') + '. Alege livrarea prin curier la adresă.' }, 400);
   const subtotal = Math.round(items.reduce((a, x) => a + x.total, 0) * 100) / 100;
   const shipping = subtotal >= SHOP.freeOver ? 0 : SHOP.cost;
   const total = Math.round((subtotal + shipping) * 100) / 100;
@@ -50,10 +57,10 @@ export async function onRequestPost({ request, env, waitUntil }) {
   if (!rs.ok) return json({ ok: false, error: 'Stoc insuficient: ' + rs.short.map(x => `${x.name} (${x.left ? 'mai sunt ' + x.left + ' buc.' : 'epuizat'})`).join('; ') + '.', stock: rs.short }, 409);
   try {
   await env.DB.prepare(`INSERT INTO orders (number, created_at, status, name, phone, email, county, city, zip, address, delivery, easybox, payment,
-      company_name, company_cui, notes, newsletter, items_json, subtotal, shipping, total)
-      VALUES (?1, ?2, 'noua', ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)`)
+      company_name, company_cui, notes, newsletter, items_json, subtotal, shipping, total, locker_json)
+      VALUES (?1, ?2, 'noua', ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)`)
     .bind(number, d.toISOString(), o.name, o.phone, o.email, o.county, o.city, o.zip, o.address, o.delivery, o.easybox, o.payment,
-      o.company ? o.companyName : null, o.company ? o.companyCui : null, o.notes, o.newsletter ? 1 : 0, JSON.stringify(items), subtotal, shipping, total)
+      o.company ? o.companyName : null, o.company ? o.companyCui : null, o.notes, o.newsletter ? 1 : 0, JSON.stringify(items), subtotal, shipping, total, locker ? JSON.stringify(locker) : null)
     .run();
   } catch (e) { await restore(env, items); throw e; }
   if (rs.zeroed.length) waitUntil(syncCatalogStock(env, rs.zeroed));
