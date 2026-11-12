@@ -75,6 +75,7 @@ function renderOrders() {
   const q = norm($('#ordSearch').value).trim(), qd = q.replace(/\D/g, '');
   const list = q ? ordList.filter(o => norm([o.number, o.name, o.email, o.city, o.county, o.awb].join(' ')).includes(q) || (qd.length >= 4 && String(o.phone).replace(/\D/g, '').includes(qd))) : ordList;
   $('#orders').innerHTML = list.length ? list.map(orderHtml).join('') : `<div class="empty">${q ? 'Nicio comandă găsită.' : 'Nicio comandă aici.'}</div>`;
+  syncBulk();
 }
 const addrText = o => [o.name, o.phone, o.delivery === 'easybox' ? 'Easybox: ' + o.easybox : o.address, o.city + ', jud. ' + o.county + (o.zip ? ', ' + o.zip : ''), o.payment === 'cod' ? 'Ramburs: ' + lei(o.total) : 'Plătit prin transfer'].join('\n');
 async function loadOrders() {
@@ -93,7 +94,7 @@ function orderHtml(o) {
   const where = o.delivery === 'easybox' ? (lk ? `<span class="eb-tag">${lk.oohType == 1 ? 'Punct PUDO' : 'Easybox'}</span> ${esc(lk.name)}<br>${esc(lk.address)}<br>${esc(lk.city)}, jud. ${esc(lk.county)}` : `Easybox (scris de client): ${esc(o.easybox)}<br>${esc(o.city)}, jud. ${esc(o.county)}`) : `${esc(o.address)}<br>${esc(o.city)}, jud. ${esc(o.county)} ${esc(o.zip || '')}`;
   const wa = String(o.phone).replace(/\D/g, '').replace(/^0/, '40');
   return `<article class="ord" data-id="${o.id}">
-    <div class="ord-h"><span class="st ${o.status}">${ST[o.status] || o.status}</span><strong>${esc(o.number)}</strong><span class="hint">${d}</span><span class="tot">${lei(o.total)}</span></div>
+    <div class="ord-h">${eligible(o) ? '<input type="checkbox" class="ord-sel" data-sel aria-label="Selectează comanda pentru AWB">' : ''}<span class="st ${o.status}">${ST[o.status] || o.status}</span><strong>${esc(o.number)}</strong><span class="hint">${d}</span><span class="tot">${lei(o.total)}</span></div>
     <div class="ord-grid">
       <div><b>Client</b>${esc(o.name)}<br><a href="tel:${esc(o.phone)}">${esc(o.phone)}</a> · <a href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp</a><br><a href="mailto:${esc(o.email)}">${esc(o.email)}</a>${o.company_name ? `<br>Firmă: ${esc(o.company_name)} (${esc(o.company_cui)})` : ''}</div>
       <div><b>Livrare</b>${where}</div>
@@ -319,4 +320,35 @@ function readSearch() {
 
 /* ---------- pornire ---------- */
 fetch('/api/admin/data', { headers: { 'x-admin': '1' } }).then(r => r.status === 401 ? showLogin() : start()).catch(showLogin);
+const defW = o => kgOf(o);
+/* ---------- AWB pentru mai multe comenzi deodată ---------- */
+const selIds = new Set();
+const eligible = o => SD.ready && !o.awb && o.status === 'noua';
+function syncBulk() {
+  const el = ordList.filter(eligible);
+  [...selIds].forEach(id => { if (!el.some(o => o.id === id)) selIds.delete(id); });
+  $('#bulkBar').hidden = !el.length;
+  $('#bulkN').textContent = selIds.size ? `${selIds.size} ${selIds.size === 1 ? 'comandă selectată' : 'comenzi selectate'}` : 'Bifează comenzile pentru care vrei AWB';
+  const b = $('#bulkAwb'); b.disabled = !selIds.size; b.textContent = selIds.size > 1 ? `Emite ${selIds.size} AWB-uri` : 'Emite AWB';
+  $$('[data-sel]').forEach(c => c.checked = selIds.has(+c.closest('.ord').dataset.id));
+}
+$('#orders').addEventListener('change', e => { const c = e.target.closest('[data-sel]'); if (!c) return; const id = +c.closest('.ord').dataset.id; c.checked ? selIds.add(id) : selIds.delete(id); syncBulk(); });
+$('#bulkAll').addEventListener('click', () => { ordList.filter(eligible).forEach(o => selIds.add(o.id)); syncBulk(); });
+$('#bulkNone').addEventListener('click', () => { selIds.clear(); syncBulk(); });
+$('#bulkAwb').addEventListener('click', async () => {
+  const list = ordList.filter(o => selIds.has(o.id) && eligible(o)); if (!list.length) return;
+  const noLocker = list.filter(o => o.delivery === 'easybox' && !o.locker_json);
+  if (!confirm(`Emiți ${list.length} ${list.length === 1 ? 'AWB' : 'AWB-uri'}?\n\nFiecare cu greutatea calculată automat, 1 colet și rambursul egal cu totalul comenzii (la cele cu ramburs).` + (noLocker.length ? `\n\n${noLocker.length} ${noLocker.length === 1 ? 'comandă easybox fără locker ales va fi sărită' : 'comenzi easybox fără locker ales vor fi sărite'}.` : ''))) return;
+  const b = $('#bulkAwb'), res = $('#bulkRes'); b.disabled = true; res.hidden = true;
+  const ok = [], bad = [];
+  for (const [i, o] of list.entries()) {
+    b.textContent = `Se emite ${i + 1} din ${list.length}…`;
+    if (o.delivery === 'easybox' && !o.locker_json) { bad.push(`${o.number}: easybox fără locker ales de pe hartă`); continue; }
+    try { await api(`orders/${o.id}/awb`, { method: 'POST', json: { weight: defW(o), parcels: 1, cod: o.payment === 'cod' ? o.total : 0 } }); ok.push(o.id); }
+    catch (err) { bad.push(`${o.number}: ${err.message}`); }
+  }
+  selIds.clear();
+  res.innerHTML = `<b>${ok.length} ${ok.length === 1 ? 'AWB emis' : 'AWB-uri emise'}</b>${ok.length ? ` · <a class="btn" href="/api/admin/labels?ids=${ok.join(',')}" target="_blank" rel="noopener">Etichete PDF (A6)</a> <a class="link" href="/api/admin/labels?ids=${ok.join(',')}&size=A4" target="_blank" rel="noopener">A4</a>` : ''}${bad.length ? `<div class="bulk-bad">Nu s-au emis:<br>${bad.map(esc).join('<br>')}</div>` : ''}<button class="link" type="button" onclick="this.parentElement.hidden=true">Închide</button>`;
+  res.hidden = false; b.disabled = false; loadOrders();
+});
 })();

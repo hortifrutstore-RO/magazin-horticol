@@ -47,6 +47,8 @@
     <section data-view="orders">
       <div class="adm-head"><h1>Comenzi</h1><button class="btn btn-ghost" id="reloadOrders">Reîncarcă</button></div>
       <div class="ord-tools"><div class="chips" id="orderFilters"></div><input class="field" id="ordSearch" type="search" placeholder="Caută: nume, telefon, nr. comandă, oraș"></div>
+      <div class="bulk" id="bulkBar" hidden><span id="bulkN"></span><button class="btn" type="button" id="bulkAwb" disabled>Emite AWB</button><button class="link" type="button" id="bulkAll">Selectează toate noile</button><button class="link" type="button" id="bulkNone">Deselectează</button></div>
+      <div class="bulk-res" id="bulkRes" hidden></div>
       <div id="orders" class="orders"></div>
     </section>
 
