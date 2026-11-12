@@ -9,7 +9,7 @@ export async function onRequestPost({ request, env }) {
   let b = {}; try { b = await request.json(); } catch {}
   const email = normEmail(b.email);
   if (!validEmail(email)) return json({ ok: false, error: 'Adresa de email nu pare corectă.' }, 400);
-  if (!mailReady(env) || !env.SESSION_SECRET) return json({ ok: false, error: 'Conectarea nu este disponibilă momentan. Încearcă mai târziu.' }, 503);
+  if (!mailReady(env) || !env.SESSION_SECRET) return json({ ok: false, error: 'Conectarea nu este disponibilă momentan. Încearcă mai târziu.' }, 422);
   const ip = request.headers.get('cf-connecting-ip') || '';
   const since = new Date(Date.now() - 15 * 60e3).toISOString();
   const r = await env.DB.prepare('SELECT SUM(email = ?1) AS e, SUM(ip = ?2) AS i FROM login_tokens WHERE created_at > ?3').bind(email, ip, since).first();
@@ -24,6 +24,6 @@ export async function onRequestPost({ request, env }) {
 <p style="margin:24px 0"><a href="${esc(link)}" style="display:inline-block;background:#1F3B2D;color:#ffffff;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:999px">Intră în cont</a></p>
 <p style="color:#6B7C70;font-size:13px">Nu ai cerut tu acest email? Îl poți ignora: nimeni nu poate intra în cont fără acest link.</p>` };
   const s = await sendMail(env, { to: email, replyTo: SHOP.email, subject: m.subject, html: m.html });
-  if (!s.ok) return json({ ok: false, error: 'Emailul nu a putut fi trimis. Încearcă din nou.' }, 502);
+  if (!s.ok) return json({ ok: false, error: 'Emailul nu a putut fi trimis. Încearcă din nou.' }, 422);
   return json({ ok: true });
 }

@@ -5,7 +5,7 @@ import { makeCookie } from '../../_lib/customer.js';
 import SHOP from '../_shop.json';
 export async function onRequestPost({ request, env }) {
   let b = {}; try { b = await request.json(); } catch {}
-  if (!env.SESSION_SECRET || !SHOP.googleClientId) return json({ ok: false, error: 'Conectarea cu Google nu este activă.' }, 503);
+  if (!env.SESSION_SECRET || !SHOP.googleClientId) return json({ ok: false, error: 'Conectarea cu Google nu este activă.' }, 422);
   let u = null; try { u = await verifyGoogle(b.credential, SHOP.googleClientId); } catch {}
   if (!u) return json({ ok: false, error: 'Conectarea cu Google nu a reușit. Încearcă din nou sau folosește linkul pe email.' }, 401);
   return json({ ok: true, email: u.email }, 200, { 'set-cookie': await makeCookie(env, u.email) });
