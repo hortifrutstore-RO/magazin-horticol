@@ -279,11 +279,13 @@ if (co) (async () => {
       await loadSdk();
       const opt = { clientId: ebMap.clientId, apiUsername: ebMap.apiUsername, countryCode: 'RO', langCode: 'ro' };
       // Harta se blochează dacă primește un oraș gol: îl trimitem doar când e completat (altfel județul sau Bucureștiul).
-      // Centrul hărții: orașul scris > județul ales > orașul aproximat după conexiune (fără cerere de locație) > București.
+      // Centrul hărții: localitatea scrisă de client (obligatorie, împreună cu județul).
       // Harta Sameday înțelege doar orașul (fără oraș se deschide pe București): fără oraș scris, folosim reședința județului ales.
       const SEAT = {"Alba": "Alba Iulia", "Arad": "Arad", "Argeș": "Pitești", "Bacău": "Bacău", "Bihor": "Oradea", "Bistrița-Năsăud": "Bistrița", "Botoșani": "Botoșani", "Brașov": "Brașov", "Brăila": "Brăila", "București": "București", "Buzău": "Buzău", "Caraș-Severin": "Reșița", "Călărași": "Călărași", "Cluj": "Cluj-Napoca", "Constanța": "Constanța", "Covasna": "Sfântu Gheorghe", "Dâmbovița": "Târgoviște", "Dolj": "Craiova", "Galați": "Galați", "Giurgiu": "Giurgiu", "Gorj": "Târgu Jiu", "Harghita": "Miercurea Ciuc", "Hunedoara": "Deva", "Ialomița": "Slobozia", "Iași": "Iași", "Ilfov": "Voluntari", "Maramureș": "Baia Mare", "Mehedinți": "Drobeta-Turnu Severin", "Mureș": "Târgu Mureș", "Neamț": "Piatra Neamț", "Olt": "Slatina", "Prahova": "Ploiești", "Satu Mare": "Satu Mare", "Sălaj": "Zalău", "Sibiu": "Sibiu", "Suceava": "Suceava", "Teleorman": "Alexandria", "Timiș": "Timișoara", "Tulcea": "Tulcea", "Vaslui": "Vaslui", "Vâlcea": "Râmnicu Vâlcea", "Vrancea": "Focșani"};
       const typed = co.city.value.trim(), county = co.county.value;
-      opt.city = typed || (county ? SEAT[county] : '') || ebMap.city || 'București';
+      // Nu mai ghicim locația după conexiune (furnizorii rurali apar la zeci de km): cerem județul și localitatea înainte de hartă.
+      if (!county || !typed) { const f = !county ? co.county : co.city; f.focus(); f.reportValidity && f.reportValidity(); b.textContent = 'Completează mai întâi județul și localitatea'; setTimeout(() => { b.textContent = t; }, 3500); b.disabled = false; return; }
+      opt.city = typed;
       window.LockerPlugin.init(opt);
       if (window.LockerPlugin.options && (window.LockerPlugin.options.city !== opt.city || window.LockerPlugin.options.county !== opt.county)) window.LockerPlugin.reinitializePlugin(opt);
       const p = window.LockerPlugin.getInstance(); p.open();
