@@ -21,7 +21,8 @@ async function geocode(env, city, county) {
 
 export async function onRequestGet({ env, request }) {
   const u = new URL(request.url), city = (u.searchParams.get('city') || '').slice(0, 80), county = (u.searchParams.get('county') || '').slice(0, 40);
-  if (!city || !county || !samedayReady(env)) return out({ ok: false });
+  if (!city || !county) return out({ ok: false, why: 'lipsă localitate' });
+  if (!samedayReady(env)) return out({ ok: false, why: 'Sameday neconfigurat' });
   try {
     const towns = await lockerTowns(env);
     const nc = norm(city), nj = norm(county);
@@ -29,9 +30,9 @@ export async function onRequestGet({ env, request }) {
     const same = inCounty.find(t => norm(t.city) === nc);
     if (same) return out({ ok: true, city: same.city, county: same.county, exact: true });
     const p = await geocode(env, city, county);
-    if (!p) return out({ ok: false });
+    if (!p) return out({ ok: false, why: 'localitate negăsită', towns: towns.length });
     let best = null;
     for (const t of towns) for (const q of t.pts) { const d = km(p, q); if (!best || d < best.d) best = { t, d }; }
     return best ? out({ ok: true, city: best.t.city, county: best.t.county, km: Math.round(best.d) }) : out({ ok: false });
-  } catch (e) { console.log('easybox-near', e && e.message); return out({ ok: false }, 200); }
+  } catch (e) { console.log('easybox-near', e && e.message); return out({ ok: false, why: String(e && e.message || e).slice(0, 160) }, 200); }
 }
