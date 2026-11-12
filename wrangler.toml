@@ -9,3 +9,9 @@ database_id = "c526ac20-86d4-4790-804e-12317ac246f3"
 
 # Secrete (se setează din panoul Cloudflare sau cu `wrangler pages secret put`):
 # RESEND_API_KEY, MAIL_FROM (ex. "magazin-horticol.ro <comenzi@magazin-horticol.ro>"), NOTIFY_EMAIL, BANK_DETAILS
+
+[vars]
+MAIL_FROM = "Magazin Horticol <comenzi@magazin-horticol.ro>"
+NOTIFY_EMAIL = "hortifrutstore@gmail.com"
+GITHUB_REPO = "hortifrutstore-RO/magazin-horticol"
+GITHUB_BRANCH = "main"
