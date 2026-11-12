@@ -112,7 +112,7 @@ open(os.path.join(DIST, '_headers'), 'w').write("""/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self "https://lockerplugin.sameday.ro")
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://accounts.google.com; connect-src 'self' https://accounts.google.com https://*.google-analytics.com https://*.googletagmanager.com https://*.google.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com https://*.google.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self'; frame-src https://accounts.google.com https://*.doubleclick.net https://*.google.com; base-uri 'self'; form-action 'self'
 /admin/*
   Cache-Control: no-store
