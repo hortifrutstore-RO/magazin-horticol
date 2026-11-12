@@ -114,3 +114,28 @@ export async function awbStatus(env, awb) {
   const s = j.expeditionSummary || {}, e = j.expeditionStatus || {};
   return { delivered: !!s.delivered, canceled: !!s.canceled, label: e.statusLabel || e.status || '', date: e.statusDate || null };
 }
+
+// Easybox-uri: lista tuturor lockerelor Sameday (oraș, județ, coordonate), ținută 24 h.
+// Harta Sameday se centrează doar pe localități care au easybox; pentru sate găsim noi orașul cel mai apropiat.
+export async function lockerTowns(env) {
+  const key = 'sameday_lockers:' + host(env);
+  const c = await kvGet(env, key); if (c) return c;
+  const all = [];
+  for (let page = 1; page <= 40; page++) {
+    const j = await call(env, 'GET', `/api/client/lockers?page=${page}&countPerPage=500`);
+    const d = j.data || []; all.push(...d);
+    if (!d.length || page >= (j.pages || 1)) break;
+  }
+  const towns = {};
+  for (const l of all) {
+    const lat = parseFloat(l.lat ?? l.latitude), lng = parseFloat(l.lng ?? l.longitude);
+    const city = l.city && (l.city.name || l.city), county = l.county && (l.county.name || l.county);
+    if (!city || !isFinite(lat) || !isFinite(lng)) continue;
+    const k = city + '|' + (county || '');
+    (towns[k] = towns[k] || { city, county: county || '', pts: [] }).pts.push([+lat.toFixed(5), +lng.toFixed(5)]);
+  }
+  const list = Object.values(towns);
+  if (list.length) await kvSet(env, key, list, 24 * 3600);
+  return list;
+}
+export { kvGet, kvSet };
