@@ -1,6 +1,6 @@
 // GET: comenzile clientului conectat + datele de livrare din ultima comandă (pentru precompletare).
 import { json } from '../../_lib/auth.js';
-import { customer } from '../../_lib/customer.js';
+import { customer, makeCookie } from '../../_lib/customer.js';
 import SHOP from '../_shop.json';
 const track = awb => (SHOP.trackingUrl || 'https://sameday.ro/status-colet/?awb={awb}').replace('{awb}', encodeURIComponent(awb));
 export async function onRequestGet({ request, env }) {
@@ -16,5 +16,5 @@ export async function onRequestGet({ request, env }) {
   const last = results[0];
   const profile = last ? { name: last.name, phone: last.phone, email: last.email, county: last.county, city: last.city, zip: last.zip, address: last.address,
     delivery: last.delivery, locker: last.locker_json ? JSON.parse(last.locker_json) : null, companyName: last.company_name, companyCui: last.company_cui } : { email };
-  return json({ ok: true, email, orders, profile });
+  return json({ ok: true, email, orders, profile }, 200, { 'set-cookie': await makeCookie(env, email) });
 }

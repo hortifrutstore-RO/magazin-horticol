@@ -314,6 +314,20 @@ if (acc) (async () => {
     show('[data-acc-login]');
     if (/[?&]e=link/.test(location.search)) $('[data-acc-expired]').hidden = false;
     const f = $('[data-acc-form]'), msg = $('[data-acc-msg]');
+    if (S.gid) {
+      const gs = document.createElement('script'); gs.src = 'https://accounts.google.com/gsi/client'; gs.async = true;
+      gs.onload = () => {
+        google.accounts.id.initialize({ client_id: S.gid, ux_mode: 'popup', callback: async r => {
+          msg.classList.remove('show');
+          const x = await fetch('/api/account/google', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ credential: r.credential }) }).then(z => z.json()).catch(() => ({}));
+          if (x.ok) location.reload(); else { msg.textContent = x.error || 'Conectarea cu Google nu a reușit.'; msg.classList.add('show'); }
+        } });
+        const box = $('[data-google-btn]');
+        google.accounts.id.renderButton(box, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', locale: 'ro', width: Math.min(360, box.parentElement.clientWidth || 360) });
+        $('[data-google-wrap]').hidden = false;
+      };
+      document.head.appendChild(gs);
+    }
     try { const pe = store.get('acc-email', ''); if (pe) f.email.value = pe; } catch {}
     f.addEventListener('submit', async e => {
       e.preventDefault(); msg.classList.remove('show');

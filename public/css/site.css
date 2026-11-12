@@ -309,3 +309,7 @@ h1,h2,.serif{font-family:var(--serif);font-weight:500;color:var(--green);letter-
 .acc-profile p{margin:0;line-height:1.6}.acc-note{color:var(--muted-3);font-size:13px}
 .acc-hint{margin:-6px 0 6px;color:var(--ok);font-size:14px;font-weight:600}
 @media (max-width:860px){.acc-grid{grid-template-columns:1fr}.acc-profile{order:-1}}
+
+.acc-google{display:flex;flex-direction:column;gap:12px;align-items:flex-start;margin-top:6px}
+.acc-or{display:flex;align-items:center;gap:10px;width:100%;color:var(--muted);font-size:13px}
+.acc-or::before,.acc-or::after{content:"";flex:1;height:1px;background:var(--line)}

@@ -16,7 +16,7 @@
 <script>
 window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
 gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied'});
-window.SITE={freeOver:{{ site.shipping.freeOver }},ship:{{ site.shipping.cost }},ga4:"{{ site.analytics.ga4 }}",ads:"{{ site.analytics.googleAds }}",popular:{{ site.popularSearches|tojson }},syn:{{ site.synonyms|tojson }}};
+window.SITE={gid:"{{ site.googleClientId or '' }}",freeOver:{{ site.shipping.freeOver }},ship:{{ site.shipping.cost }},ga4:"{{ site.analytics.ga4 }}",ads:"{{ site.analytics.googleAds }}",popular:{{ site.popularSearches|tojson }},syn:{{ site.synonyms|tojson }}};
 </script>
 {% block head %}{% endblock %}
 </head>

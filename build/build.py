@@ -96,7 +96,7 @@ json.dump(idx, open(os.path.join(DIST, 'data/search.json'), 'w', encoding='utf-8
 os.makedirs(os.path.join(ROOT, 'functions/api'), exist_ok=True)
 json.dump({p['sku']: dict(name=p['name'], model=p['name'], img=('/img/p/' + p['images'][0]) if p.get('images') else '', url='/produs/' + p['slug'] + '/', price=p['price'], inStock=p['inStock']) for p in products},
           open(os.path.join(ROOT, 'functions/api/_catalog.json'), 'w', encoding='utf-8'), ensure_ascii=False)
-json.dump(dict(freeOver=site['shipping']['freeOver'], cost=site['shipping']['cost'], email=site['contact']['email'], name=site['name'], carrier=site['shipping']['carrier'], trackingUrl=site['shipping'].get('trackingUrl') or 'https://sameday.ro/status-colet/?awb={awb}'),
+json.dump(dict(googleClientId=site.get('googleClientId',''), freeOver=site['shipping']['freeOver'], cost=site['shipping']['cost'], email=site['contact']['email'], name=site['name'], carrier=site['shipping']['carrier'], trackingUrl=site['shipping'].get('trackingUrl') or 'https://sameday.ro/status-colet/?awb={awb}'),
           open(os.path.join(ROOT, 'functions/api/_shop.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 
 # Redirecționări 301 de la adresele Magento
@@ -113,7 +113,7 @@ open(os.path.join(DIST, '_headers'), 'w').write("""/*
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.googletagmanager.com https://*.google.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com https://*.google.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src https://*.doubleclick.net https://*.google.com; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://accounts.google.com; connect-src 'self' https://accounts.google.com https://*.google-analytics.com https://*.googletagmanager.com https://*.google.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com https://*.google.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self'; frame-src https://accounts.google.com https://*.doubleclick.net https://*.google.com; base-uri 'self'; form-action 'self'
 /admin/*
   Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow

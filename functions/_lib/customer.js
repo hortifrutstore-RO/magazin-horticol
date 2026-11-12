@@ -5,7 +5,7 @@ import { safeEqual } from './auth.js';
 const enc = new TextEncoder();
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 export const ACC_COOKIE = 'acc';
-export const LINK_MIN = 30, SESSION_DAYS = 30;
+export const LINK_MIN = 30, SESSION_DAYS = 365; // sesiunea se prelungește la fiecare vizită (vezi me.js)
 export const normEmail = e => String(e || '').trim().toLowerCase();
 export const validEmail = e => /^[^\s@<>"]{1,64}@[^\s@<>"]+\.[a-z]{2,}$/i.test(e) && e.length <= 160;
 
