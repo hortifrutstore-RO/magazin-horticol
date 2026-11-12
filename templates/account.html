@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Contul meu | {{ site.name }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block main %}
+<div class="wrap acc" data-account>
+  <h1 class="acc-title">Contul meu</h1>
+
+  <p class="acc-loading" data-acc-loading>Se încarcă…</p>
+
+  <section class="acc-login panel" data-acc-login hidden>
+    <div data-acc-form-wrap>
+      <h2>Intră cu adresa de email</h2>
+      <p>Îți trimitem pe email un link de conectare. Fără parole de ținut minte. Folosește adresa cu care ai comandat și vei vedea toate comenzile tale.</p>
+      <p class="acc-err" data-acc-expired hidden>Linkul a expirat sau a fost deja folosit. Cere unul nou mai jos.</p>
+      <form class="acc-form" data-acc-form novalidate>
+        <label class="fl">Email<input class="field" type="email" name="email" autocomplete="email" required placeholder="nume@exemplu.ro"></label>
+        <button class="btn" type="submit">Trimite-mi linkul</button>
+      </form>
+      <p class="form-msg" data-acc-msg role="alert"></p>
+    </div>
+    <div class="acc-sent" data-acc-sent hidden>
+      <div class="acc-sent-ico" aria-hidden="true">✉</div>
+      <h2>Verifică emailul</h2>
+      <p>Ți-am trimis linkul de conectare pe <strong data-acc-sent-to></strong>. E valabil 30 de minute. Dacă nu-l vezi în câteva minute, uită-te și în Spam sau Promoții.</p>
+      <button type="button" class="link-btn" data-acc-again>Trimite din nou sau schimbă adresa</button>
+    </div>
+  </section>
+
+  <section class="acc-in" data-acc-in hidden>
+    <div class="acc-bar">
+      <p>Ești conectat cu <strong data-acc-email></strong></p>
+      <button type="button" class="link-btn" data-acc-logout>Ieși din cont</button>
+    </div>
+    <div class="acc-grid">
+      <div class="acc-orders">
+        <h2>Comenzile tale</h2>
+        <div data-acc-orders></div>
+      </div>
+      <aside class="panel acc-profile" data-acc-profile hidden>
+        <h2>Datele de livrare</h2>
+        <div data-acc-profile-body></div>
+        <p class="acc-note">Se completează singure la comanda următoare. Le poți schimba direct în formularul de comandă.</p>
+      </aside>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -70,6 +70,7 @@ for p in products:
            ld=json.dumps(ld, ensure_ascii=False).replace('</', '<\\/'))
 
 render('search.html', '/cautare/')
+render('account.html', '/cont/')
 render('cart.html', '/cos/', judete=JUDETE)
 
 # Pagini de text
@@ -93,7 +94,7 @@ json.dump(idx, open(os.path.join(DIST, 'data/search.json'), 'w', encoding='utf-8
 
 # Catalog pentru funcția de comenzi (prețurile reale, verificate pe server)
 os.makedirs(os.path.join(ROOT, 'functions/api'), exist_ok=True)
-json.dump({p['sku']: dict(name=p['name'], price=p['price'], inStock=p['inStock']) for p in products},
+json.dump({p['sku']: dict(name=p['name'], model=p['name'], img=('/img/p/' + p['images'][0]) if p.get('images') else '', url='/produs/' + p['slug'] + '/', price=p['price'], inStock=p['inStock']) for p in products},
           open(os.path.join(ROOT, 'functions/api/_catalog.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 json.dump(dict(freeOver=site['shipping']['freeOver'], cost=site['shipping']['cost'], email=site['contact']['email'], name=site['name'], carrier=site['shipping']['carrier'], trackingUrl=site['shipping'].get('trackingUrl') or 'https://sameday.ro/status-colet/?awb={awb}'),
           open(os.path.join(ROOT, 'functions/api/_shop.json'), 'w', encoding='utf-8'), ensure_ascii=False)

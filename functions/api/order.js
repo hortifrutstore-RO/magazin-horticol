@@ -35,7 +35,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
   for (const it of Array.isArray(b.items) ? b.items.slice(0, 50) : []) {
     const p = CATALOG[it && it.sku]; const q = Math.max(1, Math.min(99, parseInt(it && it.qty, 10) || 0));
     if (!p || !p.inStock || !q) continue;
-    items.push({ sku: it.sku, name: p.name, price: p.price, qty: q, total: Math.round(p.price * q * 100) / 100 });
+    items.push({ sku: it.sku, name: p.name, model: p.model, img: p.img, url: p.url, price: p.price, qty: q, total: Math.round(p.price * q * 100) / 100 });
   }
   if (!items.length) return json({ ok: false, error: 'Coșul este gol sau produsele nu mai sunt disponibile.' }, 400);
   const subtotal = Math.round(items.reduce((a, x) => a + x.total, 0) * 100) / 100;
@@ -66,7 +66,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
     <p>Livrare: ${where}<br>Plată: ${o.payment === 'cod' ? 'ramburs, la livrare' : 'transfer bancar'}</p>`;
   const bank = o.payment === 'transfer' && env.BANK_DETAILS ? `<p>Date pentru plată: ${esc(env.BANK_DETAILS)}<br>Mențiune: ${number}</p>` : '';
   await Promise.all([
-    sendMail(env, { to: o.email, replyTo: SHOP.email, subject: `Comanda ${number} a fost înregistrată`, html: `<p>Bună, ${esc(o.name)}!</p><p>Am primit comanda ta. Când o predăm curierului primești un email cu numărul AWB și linkul de urmărire.</p>${body}${bank}<p>Mulțumim!</p>` }),
+    sendMail(env, { to: o.email, replyTo: SHOP.email, subject: `Comanda ${number} a fost înregistrată`, html: `<p>Bună, ${esc(o.name)}!</p><p>Am primit comanda ta. Când o predăm curierului primești un email cu numărul AWB și linkul de urmărire.</p>${body}${bank}<p>Comenzile tale le vezi oricând în <a href="${new URL(request.url).origin}/cont/">contul tău</a>.</p><p>Mulțumim!</p>` }),
     sendMail(env, { to: env.NOTIFY_EMAIL || SHOP.email, replyTo: o.email, subject: `Comandă nouă ${number} – ${lei(total)}`, html: `${body}<p>${esc(o.name)} · ${esc(o.phone)} · ${esc(o.email)}${o.company ? `<br>Firmă: ${esc(o.companyName)} (${esc(o.companyCui)})` : ''}${o.notes ? `<br>Observații: ${esc(o.notes)}` : ''}</p>` })
   ]);
   return json({ ok: true, number, total });

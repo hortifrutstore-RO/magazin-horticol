@@ -301,4 +301,72 @@ if (ck) ck.addEventListener('click', e => { const b = e.target.closest('[data-ck
 $$('[data-cookie-settings]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); ck.classList.add('show'); }));
 
 updateCount();
+
+/* ---------- contul clientului ---------- */
+const ACC_ST = { noua: ['Primită', 'st-new'], expediata: ['Expediată', 'st-ship'], livrata: ['Livrată', 'st-done'], anulata: ['Anulată', 'st-off'] };
+const fdate = iso => new Date(iso).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' });
+const accMe = () => fetch('/api/account/me', { credentials: 'same-origin', cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+const acc = $('[data-account]');
+if (acc) (async () => {
+  const show = sel => ['[data-acc-loading]', '[data-acc-login]', '[data-acc-in]'].forEach(s => $(s).hidden = s !== sel);
+  const me = await accMe();
+  if (!me) {
+    show('[data-acc-login]');
+    if (/[?&]e=link/.test(location.search)) $('[data-acc-expired]').hidden = false;
+    const f = $('[data-acc-form]'), msg = $('[data-acc-msg]');
+    try { const pe = store.get('acc-email', ''); if (pe) f.email.value = pe; } catch {}
+    f.addEventListener('submit', async e => {
+      e.preventDefault(); msg.classList.remove('show');
+      const email = f.email.value.trim(), b = $('button', f);
+      if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) { msg.textContent = 'Scrie o adresă de email corectă.'; msg.classList.add('show'); f.email.focus(); return; }
+      b.disabled = true; b.textContent = 'Se trimite…';
+      try {
+        const r = await fetch('/api/account/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || !j.ok) throw new Error(j.error || 'Nu am putut trimite linkul. Încearcă din nou.');
+        store.set('acc-email', email);
+        $('[data-acc-sent-to]').textContent = email; $('[data-acc-form-wrap]').hidden = true; $('[data-acc-sent]').hidden = false;
+      } catch (err) { msg.textContent = err.message; msg.classList.add('show'); }
+      b.disabled = false; b.textContent = 'Trimite-mi linkul';
+    });
+    $('[data-acc-again]').addEventListener('click', () => { $('[data-acc-sent]').hidden = true; $('[data-acc-form-wrap]').hidden = false; f.email.focus(); });
+    return;
+  }
+  if (location.search) history.replaceState(null, '', '/cont/');
+  show('[data-acc-in]');
+  $('[data-acc-email]').textContent = me.email;
+  const idx = await catalog();
+  const box = $('[data-acc-orders]');
+  box.innerHTML = me.orders.length ? me.orders.map(o => {
+    const [lbl, cls] = ACC_ST[o.status] || [o.status, ''];
+    const can = o.items.some(i => idx.by[i.sku] && idx.by[i.sku].inStock);
+    return `<article class="acc-order">
+      <header><div><strong>Comanda ${esc(o.number)}</strong><small>${fdate(o.created_at)}</small></div><span class="acc-st ${cls}">${lbl}</span></header>
+      <ul>${o.items.map(i => `<li>${i.img ? `<img src="${esc(i.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}<div>${i.url ? `<a href="${esc(i.url)}">${esc(i.name)}</a>` : esc(i.name)}${i.opt ? `<small>${esc(i.opt)}</small>` : ''}</div><span class="q">${i.qty} buc.</span></li>`).join('')}</ul>
+      <footer><div><span class="acc-total">${lei(o.total)}</span><small>${o.delivery === 'easybox' ? 'Easybox' : 'Curier'}${o.where ? ': ' + esc(o.where) : ''}</small></div>
+        <div class="acc-act">${o.track ? `<a class="btn btn-ghost" href="${esc(o.track)}" target="_blank" rel="noopener">Urmărește coletul</a>` : ''}${can ? `<button class="btn" type="button" data-reorder="${esc(o.number)}">Comandă din nou</button>` : ''}</div></footer>
+    </article>`; }).join('') : '<div class="empty">Nu avem încă nicio comandă pe această adresă de email. <a href="/">Vezi produsele</a></div>';
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-reorder]'); if (!b) return;
+    const o = me.orders.find(x => x.number === b.dataset.reorder); let n = 0;
+    o.items.forEach(i => { if (idx.by[i.sku] && idx.by[i.sku].inStock) { cart.add(i.sku, i.qty); n++; } });
+    if (n) location.href = '/cos/'; else toast('Produsele din această comandă nu mai sunt în stoc.');
+  });
+  const p = me.profile;
+  if (p && p.name) {
+    $('[data-acc-profile]').hidden = false;
+    $('[data-acc-profile-body]').innerHTML = `<p><strong>${esc(p.name)}</strong><br>${esc(p.phone || '')}<br>${esc(p.address || '')}${p.address ? '<br>' : ''}${esc(p.city || '')}${p.county ? ', jud. ' + esc(p.county) : ''}${p.zip ? ' · ' + esc(p.zip) : ''}${p.locker ? `<br>Ultimul easybox: ${esc(p.locker.name)}` : ''}</p>`;
+  }
+  $('[data-acc-logout]').addEventListener('click', async () => { await fetch('/api/account/logout', { method: 'POST' }); location.href = '/cont/'; });
+})();
+
+// Precompletare la comandă pentru clientul conectat (doar câmpurile goale).
+const coF = $('[data-checkout]');
+if (coF) accMe().then(me => {
+  if (!me || !me.profile) return;
+  const p = me.profile, set = (n, v) => { const el = coF[n]; if (el && v && !el.value) { el.value = v; el.dispatchEvent(new Event('change', { bubbles: true })); } };
+  ['name', 'phone', 'email', 'county', 'city', 'zip', 'address'].forEach(k => set(k, p[k]));
+  if (p.locker && p.locker.lockerId) { try { if (!store.get('mh-easybox', null)) store.set('mh-easybox', p.locker); } catch {} }
+  const h = $('[data-ship-h]'); if (h && !$('.acc-hint')) h.insertAdjacentHTML('afterend', `<p class="acc-hint">Ești conectat cu ${esc(me.email)}. Am completat datele din ultima comandă.</p>`);
+});
 })();
