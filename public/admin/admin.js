@@ -119,7 +119,7 @@ $('#orderFilters').addEventListener('click', e => { const b = e.target.closest('
 $('#reloadOrders').addEventListener('click', loadOrders);
 $('#ordSearch').addEventListener('input', renderOrders);
 let awbFor = null;
-const kgOf = o => { const t = o.items.reduce((a, i) => { let w = Number(i.w) || 0; if (w > 30) w = w / 1000; return a + (w || 0.5) * i.qty; }, 0); return Math.max(0.5, Math.round((t + 0.2) * 10) / 10); };
+const kgOf = () => 0.1; // greutate implicită pe AWB (se poate schimba la emitere)
 $('#orders').addEventListener('click', async e => {
   const mk = e.target.closest('[data-mkawb]'), del = e.target.closest('[data-delawb]'), cp = e.target.closest('[data-copy]'); if (!mk && !del && !cp) return;
   const o = ordList.find(x => String(x.id) === e.target.closest('.ord').dataset.id);

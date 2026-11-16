@@ -9,6 +9,9 @@ const SCHEMA = [
 const COLUMNS = ['locker_json TEXT', 'awb_status TEXT', 'awb_checked_at TEXT'];
 let ready = null;
 export async function onRequest(ctx) {
+  // Adresele *.pages.dev (implicite Cloudflare) trimit la domeniul real, ca Google să nu le indexeze ca duplicat.
+  const u = new URL(ctx.request.url);
+  if (u.hostname.endsWith('.pages.dev') && !/^\/api\//.test(u.pathname)) return Response.redirect('https://magazin-horticol.ro' + u.pathname + u.search, 301);
   if (ctx.env.DB && /^\/api\//.test(new URL(ctx.request.url).pathname)) {
     if (!ready) ready = ctx.env.DB.batch(SCHEMA.map(s => ctx.env.DB.prepare(s)))
       .then(() => Promise.all(COLUMNS.map(c => ctx.env.DB.prepare('ALTER TABLE orders ADD COLUMN ' + c).run().catch(() => null))))
