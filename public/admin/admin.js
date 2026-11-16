@@ -67,6 +67,7 @@ const ST = { noua: 'Nouă', expediata: 'Expediată', livrata: 'Livrată', anulat
 let ordFilter = 'noua', ordList = [], SD = { ready: false };
 async function loadSameday() {
   try { SD = await api('sameday'); } catch { SD = { ready: false }; }
+  $('#estBox').hidden = !SD.ready;
   if (SD.ready && !SD.error) { try { const r = await api('sameday/sync', { method: 'POST' }); if (r.delivered) toast(`${r.delivered} ${r.delivered === 1 ? 'comandă a fost livrată' : 'comenzi au fost livrate'} (actualizat din Sameday).`); } catch {} }
   loadOrders();
 }
@@ -350,5 +351,20 @@ $('#bulkAwb').addEventListener('click', async () => {
   selIds.clear();
   res.innerHTML = `<b>${ok.length} ${ok.length === 1 ? 'AWB emis' : 'AWB-uri emise'}</b>${ok.length ? ` · <a class="btn" href="/api/admin/labels?ids=${ok.join(',')}" target="_blank" rel="noopener">Etichete PDF (A6)</a> <a class="link" href="/api/admin/labels?ids=${ok.join(',')}&size=A4" target="_blank" rel="noopener">A4</a>` : ''}${bad.length ? `<div class="bulk-bad">Nu s-au emis:<br>${bad.map(esc).join('<br>')}</div>` : ''}<button class="link" type="button" onclick="this.parentElement.hidden=true">Închide</button>`;
   res.hidden = false; b.disabled = false; loadOrders();
+});
+
+/* ---------- tarif Sameday ---------- */
+$('#estForm').addEventListener('submit', async e => {
+  e.preventDefault(); const f = e.target, m = $('#estMsg'), b = $('#estGo');
+  const v = Object.fromEntries(new FormData(f)); b.disabled = true; b.textContent = 'Se calculează…'; m.classList.remove('show');
+  m.classList.remove('ok');
+  try {
+    const r = await api('sameday/estimate', { method: 'POST', json: v });
+    m.innerHTML = r.amount != null
+      ? `<b>${lei(r.amount)}</b> ${esc(r.currency && r.currency !== 'RON' ? r.currency : '')} · ${esc(r.service)} · ${esc(v.weight)} kg, ${esc(v.length)}×${esc(v.width)}×${esc(v.height)} cm${Number(v.cod) ? ', ramburs ' + lei(v.cod) : ''}${r.time ? ' · livrare estimată: ' + esc(r.time) : ''}`
+      : 'Sameday a răspuns fără preț: ' + esc(JSON.stringify(r.raw).slice(0, 300));
+    if (r.amount != null) m.classList.add('ok');
+  } catch (err) { m.textContent = err.message; }
+  m.classList.add('show'); b.disabled = false; b.textContent = 'Calculează';
 });
 })();

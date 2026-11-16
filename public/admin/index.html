@@ -50,6 +50,22 @@
       <div class="bulk" id="bulkBar" hidden><span id="bulkN"></span><button class="btn" type="button" id="bulkAwb" disabled>Emite AWB</button><button class="link" type="button" id="bulkAll">Selectează toate noile</button><button class="link" type="button" id="bulkNone">Deselectează</button></div>
       <div class="bulk-res" id="bulkRes" hidden></div>
       <div id="orders" class="orders"></div>
+      <details class="cardx est" id="estBox" hidden><summary><b>Tarif Sameday</b> <span class="hint">— cât costă un colet, din contractul tău (fără să emită AWB)</span></summary>
+        <form id="estForm" class="est-f">
+          <div class="awb-grid">
+            <label class="fl">Greutate (kg)<input class="field" name="weight" type="number" step="0.1" min="0.1" max="50" value="1" required></label>
+            <label class="fl">Livrare<select class="field" name="service"><option value="home">Acasă (24H)</option><option value="easybox">Easybox</option></select></label>
+            <label class="fl">Ramburs (lei, opțional)<input class="field" name="cod" type="number" step="0.01" min="0" placeholder="0"></label>
+            <label class="fl">Lungime (cm)<input class="field" name="length" type="number" min="1" max="200" value="30"></label>
+            <label class="fl">Lățime (cm)<input class="field" name="width" type="number" min="1" max="200" value="20"></label>
+            <label class="fl">Înălțime (cm)<input class="field" name="height" type="number" min="1" max="200" value="10"></label>
+            <label class="fl">Județ destinație<input class="field" name="county" value="Cluj"></label>
+            <label class="fl">Localitate destinație<input class="field" name="city" value="Cluj-Napoca"></label>
+            <div class="fl" style="justify-content:flex-end"><button class="btn" id="estGo">Calculează</button></div>
+          </div>
+          <div class="form-msg" id="estMsg" role="status"></div>
+        </form>
+      </details>
     </section>
 
     <!-- PRODUSE -->

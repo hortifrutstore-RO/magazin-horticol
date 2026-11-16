@@ -97,3 +97,6 @@
 .bulk-res{background:#EEF6F0;border:1px solid #CFE3D6;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .bulk-res .btn{min-height:38px;padding:0 16px;font-size:13px}
 .bulk-bad{flex-basis:100%;color:#B42318;font-size:14px}
+
+.est summary{cursor:pointer;list-style:none}.est summary::-webkit-details-marker{display:none}.est summary::before{content:'▸ ';color:var(--muted-2)}.est[open] summary::before{content:'▾ '}.est-f{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.est .form-msg.ok{background:#EAF4EC;color:#14231A}
