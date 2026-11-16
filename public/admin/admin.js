@@ -140,7 +140,7 @@ $('#awbForm').addEventListener('submit', async e => {
   if (e.submitter && e.submitter.value === 'cancel') return;
   e.preventDefault(); const f = e.target, b = $('#awbGo'); b.disabled = true; b.textContent = 'Se emite…';
   try {
-    const r = await api(`orders/${awbFor.id}/awb`, { method: 'POST', json: { weight: +f.weight.value, parcels: +f.parcels.value, cod: +f.cod.value, observation: f.observation.value } });
+    const r = await api(`orders/${awbFor.id}/awb`, { method: 'POST', json: { weight: +f.weight.value, parcels: +f.parcels.value || 1, cod: +f.cod.value, observation: f.observation.value } });
     $('#awbDlg').close(); toast(`AWB ${r.awb} emis.` + (r.mailed ? ' Clientul a primit emailul cu urmărirea.' : ''));
     window.open(`/api/admin/orders/${awbFor.id}/label`, '_blank'); loadOrders();
   } catch (err) { $('#awbMsg').textContent = err.message; $('#awbMsg').classList.add('show'); }
