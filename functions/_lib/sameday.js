@@ -151,11 +151,12 @@ export async function estimate(env, opts) {
   if (!pt) throw new Error('Sameday: contul nu are niciun punct de ridicare.');
   const w = Math.max(0.1, Math.min(50, Number(opts.weight) || 1));
   const cod = Math.max(0, Number(opts.cod) || 0);
+  const n = Math.max(1, Math.min(10, parseInt(opts.parcels, 10) || 1)), each = Math.round((w / n) * 100) / 100;
   const body = {
-    pickupPoint: pt.id, contactPerson: pt.contact, packageType: 0, packageNumber: 1, packageWeight: w,
+    pickupPoint: pt.id, contactPerson: pt.contact, packageType: 0, packageNumber: n, packageWeight: w,
     service: svc.id, awbPayment: 1, cashOnDelivery: cod, cashOnDeliveryReturns: cod ? 1 : null, insuredValue: 0, thirdPartyPickup: 0,
     awbRecipient: { name: 'Estimare tarif', phoneNumber: '0700000000', personType: 0, cityString: String(opts.city || 'Cluj-Napoca'), countyString: String(opts.county || 'Cluj'), address: 'Estimare' },
-    parcels: [{ weight: w, width: Number(opts.width) || 30, length: Number(opts.length) || 20, height: Number(opts.height) || 10 }]
+    parcels: Array.from({ length: n }, () => ({ weight: each, width: Number(opts.width) || 30, length: Number(opts.length) || 20, height: Number(opts.height) || 10 }))
   };
   const j = await call(env, 'POST', '/api/awb/estimate-cost', body);
   return { amount: j.amount ?? j.cost ?? null, currency: j.currency || 'RON', time: j.time ?? null, service: svc.name, raw: j };

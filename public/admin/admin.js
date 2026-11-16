@@ -135,6 +135,7 @@ $('#orders').addEventListener('click', async e => {
   $('#awbWho').innerHTML = `<b>${esc(o.number)}</b> · ${esc(o.name)} · ${n} buc. · ${o.delivery === 'easybox' ? (lk ? 'easybox ' + esc(lk.name) : '<span style="color:#B42318">easybox fără locker ales de pe hartă</span>') : esc(o.city)}`;
   const code = o.delivery === 'easybox' ? (lk && lk.oohType == 1 ? 'PP' : 'LN') : '24'; const sv = (SD.services || []).find(x => x.code === code); const pt = (SD.points || []).find(x => x.isDefault) || (SD.points || [])[0];
   $('#awbSvc').textContent = SD.error ? 'Atenție: ' + SD.error : (sv ? 'Serviciu: ' + sv.name : 'Serviciu: ' + code) + (pt ? ' · ridicare de la: ' + (pt.alias || pt.address) : '') + (SD.test ? ' · SERVER DE TEST' : '');
+  $('#awbCost').textContent = '';
   $('#awbMsg').classList.remove('show'); $('#awbDlg').showModal();
 });
 $('#awbForm').addEventListener('submit', async e => {
@@ -366,5 +367,15 @@ $('#estForm').addEventListener('submit', async e => {
     if (r.amount != null) m.classList.add('ok');
   } catch (err) { m.textContent = err.message; }
   m.classList.add('show'); b.disabled = false; b.textContent = 'Calculează';
+});
+
+$('#awbEst').addEventListener('click', async () => {
+  const f = $('#awbForm'), o = awbFor, out = $('#awbCost'); if (!o) return;
+  const lk = o.locker_json ? JSON.parse(o.locker_json) : null;
+  out.textContent = 'Se calculează…';
+  try {
+    const r = await api('sameday/estimate', { method: 'POST', json: { weight: f.weight.value, parcels: f.parcels.value || 1, cod: f.cod.value, service: o.delivery === 'easybox' ? 'easybox' : 'home', county: lk ? lk.county : o.county, city: lk ? lk.city : o.city } });
+    out.innerHTML = r.amount != null ? `<b>${lei(r.amount)}</b> · ${esc(r.service)}` : 'Sameday a răspuns fără preț.';
+  } catch (err) { out.textContent = err.message; }
 });
 })();
