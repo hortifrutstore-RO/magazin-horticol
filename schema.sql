@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS orders (
   county TEXT, city TEXT, zip TEXT, address TEXT,
   delivery TEXT NOT NULL,                    -- address | easybox
   easybox TEXT,
-  payment TEXT NOT NULL,                     -- cod | transfer
+  payment TEXT NOT NULL,                     -- cod | transfer | card
+  -- coloane adăugate automat (functions/_middleware.js): locker_json, awb_status, awb_checked_at, pay_status, pay_token, pay_ntp, pay_attempt, paid_at
   company_name TEXT, company_cui TEXT,
   notes TEXT, newsletter INTEGER DEFAULT 0,
   items_json TEXT NOT NULL,

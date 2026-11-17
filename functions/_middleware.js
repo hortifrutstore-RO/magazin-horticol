@@ -6,7 +6,7 @@ const SCHEMA = [
  "CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT NOT NULL, exp TEXT)"
 ];
 // Coloane adăugate ulterior (pe o bază existentă ALTER dă eroare dacă există deja: o ignorăm).
-const COLUMNS = ['locker_json TEXT', 'awb_status TEXT', 'awb_checked_at TEXT'];
+const COLUMNS = ['locker_json TEXT', 'awb_status TEXT', 'awb_checked_at TEXT', 'pay_status TEXT', 'pay_token TEXT', 'pay_ntp TEXT', 'pay_attempt INTEGER', 'paid_at TEXT'];
 let ready = null;
 export async function onRequest(ctx) {
   // Adresele *.pages.dev (implicite Cloudflare) trimit la domeniul real, ca Google să nu le indexeze ca duplicat.

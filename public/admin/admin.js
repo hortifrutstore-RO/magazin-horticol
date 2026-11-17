@@ -78,7 +78,10 @@ function renderOrders() {
   $('#orders').innerHTML = list.length ? list.map(orderHtml).join('') : `<div class="empty">${q ? 'Nicio comandă găsită.' : 'Nicio comandă aici.'}</div>`;
   syncBulk();
 }
-const addrText = o => [o.name, o.phone, o.delivery === 'easybox' ? 'Easybox: ' + o.easybox : o.address, o.city + ', jud. ' + o.county + (o.zip ? ', ' + o.zip : ''), o.payment === 'cod' ? 'Ramburs: ' + lei(o.total) : 'Plătit prin transfer'].join('\n');
+const PAYST = { paid: '<span class="pay-ok">plătită ✓</span>', pending: '<span class="pay-wait">NEPLĂTITĂ – plata în curs / abandonată</span>', failed: '<span class="pay-bad">NEPLĂTITĂ – plata a eșuat</span>', review: '<span class="pay-wait">în verificare la bancă</span>', refunded: '<span class="pay-bad">rambursată</span>' };
+const unpaid = o => o.payment === 'card' && o.pay_status !== 'paid';
+const payText = o => o.payment === 'cod' ? 'Ramburs, la livrare' : o.payment === 'card' ? 'Card online (Netopia) – ' + (PAYST[o.pay_status] || PAYST.pending) : 'Transfer bancar';
+const addrText = o => [o.name, o.phone, o.delivery === 'easybox' ? 'Easybox: ' + o.easybox : o.address, o.city + ', jud. ' + o.county + (o.zip ? ', ' + o.zip : ''), o.payment === 'cod' ? 'Ramburs: ' + lei(o.total) : o.payment === 'card' ? 'Plătit cu cardul' : 'Plătit prin transfer'].join('\n');
 async function loadOrders() {
   try {
     const j = await api('orders' + (ordFilter ? '?status=' + ordFilter : ''));
@@ -99,11 +102,12 @@ function orderHtml(o) {
     <div class="ord-grid">
       <div><b>Client</b>${esc(o.name)}<br><a href="tel:${esc(o.phone)}">${esc(o.phone)}</a> · <a href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp</a><br><a href="mailto:${esc(o.email)}">${esc(o.email)}</a>${o.company_name ? `<br>Firmă: ${esc(o.company_name)} (${esc(o.company_cui)})` : ''}</div>
       <div><b>Livrare</b>${where}</div>
-      <div><b>Plată</b>${o.payment === 'cod' ? 'Ramburs, la livrare' : 'Transfer bancar'}<br>Transport: ${o.shipping ? lei(o.shipping) : 'gratuit'}${o.newsletter ? '<br>Acceptă oferte pe email' : ''}</div>
+      <div><b>Plată</b>${payText(o)}<br>Transport: ${o.shipping ? lei(o.shipping) : 'gratuit'}${o.newsletter ? '<br>Acceptă oferte pe email' : ''}</div>
     </div>
     ${o.notes ? `<div class="hint">Observații client: ${esc(o.notes)}</div>` : ''}
     <div class="ord-items">${o.items.map(i => `<div><span>${i.qty} × ${esc(i.name)} <small class="hint">(${esc(i.sku)})</small></span><span>${lei(i.total)}</span></div>`).join('')}</div>
-    ${SD.ready && !o.awb && o.status !== 'anulata' ? `<div class="ord-sd"><button class="btn" data-mkawb>Emite AWB Sameday</button><span class="hint">Eticheta PDF și emailul cu urmărirea pleacă automat.</span><button class="link" data-copy>Copiază datele pentru AWB</button></div>` : ''}
+    ${unpaid(o) && o.status === 'noua' ? `<div class="hint pay-bad">Comanda nu este plătită: nu o expedia. Dacă nu se plătește, anuleaz-o (produsele revin în stoc).</div>` : ''}
+    ${SD.ready && !o.awb && o.status !== 'anulata' && !unpaid(o) ? `<div class="ord-sd"><button class="btn" data-mkawb>Emite AWB Sameday</button><span class="hint">Eticheta PDF și emailul cu urmărirea pleacă automat.</span><button class="link" data-copy>Copiază datele pentru AWB</button></div>` : ''}
     ${SD.ready && o.awb ? `<div class="ord-sd"><a class="btn btn-ghost" href="/api/admin/orders/${o.id}/label" target="_blank" rel="noopener">Etichetă PDF (A6)</a><a class="link" href="/api/admin/orders/${o.id}/label?size=A4" target="_blank" rel="noopener">A4</a>${o.awb_status ? `<span class="hint">Sameday: ${esc(o.awb_status)}</span>` : ''}${o.status === 'expediata' ? '<button class="link danger" data-delawb>Anulează AWB</button>' : ''}</div>` : ''}
     ${!SD.ready && o.status === 'noua' ? '<div class="ord-sd"><button class="link" data-copy>Copiază datele pentru AWB</button></div>' : ''}
     <div class="ord-act">
@@ -325,7 +329,7 @@ fetch('/api/admin/data', { headers: { 'x-admin': '1' } }).then(r => r.status ===
 const defW = o => kgOf(o);
 /* ---------- AWB pentru mai multe comenzi deodată ---------- */
 const selIds = new Set();
-const eligible = o => SD.ready && !o.awb && o.status === 'noua';
+const eligible = o => SD.ready && !o.awb && o.status === 'noua' && !unpaid(o);
 function syncBulk() {
   const el = ordList.filter(eligible);
   [...selIds].forEach(id => { if (!el.some(o => o.id === id)) selIds.delete(id); });

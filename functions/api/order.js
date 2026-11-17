@@ -2,12 +2,13 @@
 // Prețurile și transportul se recalculează aici, din catalogul de pe server, nu din browser.
 import CATALOG from './_catalog.json';
 import SHOP from './_shop.json';
-import { sendMail, esc } from '../_lib/mail.js';
+import { sendOrderMails } from '../_lib/order-mail.js';
+import { checkSession } from '../_lib/auth.js';
+import { netopiaReady, netopiaLive, startPayment } from '../_lib/netopia.js';
 import { reserve, restore, syncCatalogStock } from '../_lib/stock.js';
 
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { 'content-type': 'application/json; charset=utf-8' } });
 const str = (v, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
-const lei = n => n.toFixed(2).replace('.', ',') + ' lei';
 
 export async function onRequestPost({ request, env, waitUntil }) {
   let b;
@@ -17,7 +18,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const o = {
     name: str(b.name, 120), phone: str(b.phone, 30), email: str(b.email, 160), county: str(b.county, 40), city: str(b.city, 80),
     zip: str(b.zip, 10), address: str(b.address, 250), delivery: b.delivery === 'easybox' ? 'easybox' : 'address', easybox: str(b.easybox, 200),
-    payment: b.payment === 'transfer' ? 'transfer' : 'cod', company: !!b.company, companyName: str(b.companyName, 160), companyCui: str(b.companyCui, 20),
+    payment: ['transfer', 'card'].includes(b.payment) ? b.payment : 'cod', company: !!b.company, companyName: str(b.companyName, 160), companyCui: str(b.companyCui, 20),
     notes: str(b.notes, 1000), newsletter: !!b.newsletter
   };
   // Easybox ales de pe harta Sameday
@@ -34,6 +35,8 @@ export async function onRequestPost({ request, env, waitUntil }) {
   if (o.delivery === 'easybox' && (o.easybox.length < 3 || (env.SAMEDAY_USER && !locker))) errs.push('easybox (alege-l de pe hartă)');
   if (o.company && (!o.companyName || !o.companyCui)) errs.push('date firmă');
   if (b.terms !== true) errs.push('acceptarea termenilor');
+  if (o.payment === 'card' && !(netopiaReady(env) && (netopiaLive(env) || await checkSession(request, env.SESSION_SECRET))))
+    return json({ ok: false, error: 'Plata cu cardul nu este disponibilă momentan. Alege plata la livrare.' }, 400);
   if (errs.length) return json({ ok: false, error: 'Verifică: ' + errs.join(', ') + '.' }, 400);
 
   const items = [];
@@ -65,17 +68,26 @@ export async function onRequestPost({ request, env, waitUntil }) {
   } catch (e) { await restore(env, items); throw e; }
   if (rs.zeroed.length) waitUntil(syncCatalogStock(env, rs.zeroed));
 
-  const rows = items.map(x => `<tr><td>${esc(x.name)}</td><td align="center">${x.qty}</td><td align="right">${lei(x.total)}</td></tr>`).join('');
-  const where = o.delivery === 'easybox' ? `Easybox: ${esc(o.easybox)}` : `${esc(o.address)}, ${esc(o.city)}, jud. ${esc(o.county)}`;
-  const body = `<p>Comanda <b>${number}</b></p><table cellpadding="6" style="border-collapse:collapse;width:100%">${rows}
-    <tr><td colspan="2">Transport</td><td align="right">${shipping ? lei(shipping) : 'Gratuit'}</td></tr>
-    <tr><td colspan="2"><b>Total</b></td><td align="right"><b>${lei(total)}</b></td></tr></table>
-    <p>Livrare: ${where}<br>Plată: ${o.payment === 'cod' ? 'ramburs, la livrare' : 'transfer bancar'}</p>`;
-  const bank = o.payment === 'transfer' && env.BANK_DETAILS ? `<p>Date pentru plată: ${esc(env.BANK_DETAILS)}<br>Mențiune: ${number}</p>` : '';
-  await Promise.all([
-    sendMail(env, { to: o.email, replyTo: SHOP.email, subject: `Comanda ${number} a fost înregistrată`, html: `<p>Bună, ${esc(o.name)}!</p><p>Am primit comanda ta. Când o predăm curierului primești un email cu numărul AWB și linkul de urmărire.</p>${body}${bank}<p>Comenzile tale le vezi oricând în <a href="${new URL(request.url).origin}/cont/">contul tău</a>.</p><p>Mulțumim!</p>` }),
-    sendMail(env, { to: env.NOTIFY_EMAIL || SHOP.email, replyTo: o.email, subject: `Comandă nouă ${number} – ${lei(total)}`, html: `${body}<p>${esc(o.name)} · ${esc(o.phone)} · ${esc(o.email)}${o.company ? `<br>Firmă: ${esc(o.companyName)} (${esc(o.companyCui)})` : ''}${o.notes ? `<br>Observații: ${esc(o.notes)}` : ''}</p>` })
-  ]);
+  const row = { number, name: o.name, phone: o.phone, email: o.email, county: o.county, city: o.city, zip: o.zip, address: o.address, delivery: o.delivery,
+    easybox: o.easybox, payment: o.payment, company_name: o.company ? o.companyName : null, company_cui: o.company ? o.companyCui : null, notes: o.notes,
+    items_json: JSON.stringify(items), subtotal, shipping, total };
+  const origin = new URL(request.url).origin;
+
+  // Card: trimitem clientul la Netopia; emailurile pleacă abia după confirmarea plății (IPN).
+  if (o.payment === 'card') {
+    const token = crypto.randomUUID().replace(/-/g, '');
+    const p = await startPayment(env, origin, row, items, 1, token);
+    if (!p.ok) {
+      await env.DB.prepare('DELETE FROM orders WHERE number = ?1').bind(number).run();
+      await restore(env, items); if (rs.zeroed.length) waitUntil(syncCatalogStock(env, rs.zeroed));
+      console.log('Netopia start', number, p.error, JSON.stringify(p.raw || {}));
+      return json({ ok: false, error: 'Plata cu cardul nu a putut fi inițiată. Încearcă din nou sau alege plata la livrare.' }, 502);
+    }
+    await env.DB.prepare("UPDATE orders SET pay_status = 'pending', pay_token = ?1, pay_ntp = ?2, pay_attempt = 1 WHERE number = ?3").bind(token, p.ntpID, number).run();
+    return json({ ok: true, number, total, payUrl: p.url });
+  }
+
+  await sendOrderMails(env, origin, row);
   return json({ ok: true, number, total });
 }
 

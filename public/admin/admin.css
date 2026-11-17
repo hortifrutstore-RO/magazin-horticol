@@ -100,3 +100,5 @@
 
 .est summary{cursor:pointer;list-style:none}.est summary::-webkit-details-marker{display:none}.est summary::before{content:'▸ ';color:var(--muted-2)}.est[open] summary::before{content:'▾ '}.est-f{margin-top:12px;display:flex;flex-direction:column;gap:10px}
 .est .form-msg.ok{background:#EAF4EC;color:#14231A}
+
+.pay-ok{color:#1f7a3a;font-weight:600}.pay-wait{color:#a86b00;font-weight:600}.pay-bad{color:#b3261e;font-weight:600}
