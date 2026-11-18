@@ -31,7 +31,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
   if (!/^[0-9 +().-]{9,}$/.test(o.phone)) errs.push('telefon');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.email)) errs.push('email');
   if (!o.county || !o.city) errs.push('localitate');
-  if (o.delivery === 'address' && o.address.length < 5) errs.push('adresă');
+  if (o.delivery === 'address' && o.address.length < 3) errs.push('adresă (scrie strada și numărul, sau doar numărul la sat)');
   if (o.delivery === 'easybox' && (o.easybox.length < 3 || (env.SAMEDAY_USER && !locker))) errs.push('easybox (alege-l de pe hartă)');
   if (o.company && (!o.companyName || !o.companyCui)) errs.push('date firmă');
   if (b.terms !== true) errs.push('acceptarea termenilor');
