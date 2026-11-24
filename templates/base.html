@@ -65,11 +65,13 @@ window.SITE={gid:"{{ site.googleClientId or '' }}",freeOver:{{ site.shipping.fre
       <strong>Informații</strong>
       <a href="/livrare-si-plata/">Livrare și plată</a>
       <a href="/retur/">Retur în 14 zile</a>
+      <a href="/retragere/">Retrage-te din contract aici</a>
       <a href="/termeni-si-conditii/">Termeni și condiții</a>
       <a href="/confidentialitate/">Politica de confidențialitate</a>
       <a href="/cookie-uri/">Politica de cookie-uri</a>
       <a href="#" data-cookie-settings>Setări cookie-uri</a>
       <a href="https://anpc.ro/ce-este-sal/" rel="noopener" target="_blank">ANPC – Soluționarea alternativă a litigiilor</a>
+      <a href="https://consumer-redress.ec.europa.eu/" rel="noopener" target="_blank">Soluționarea online a litigiilor (UE)</a>
     </div>
     <div>
       <strong>Contact</strong>
@@ -81,6 +83,7 @@ window.SITE={gid:"{{ site.googleClientId or '' }}",freeOver:{{ site.shipping.fre
       <p>{{ site.company.address }}</p>
     </div>
   </div>
+  {% if site.payLogos %}<div class="wrap pay-logos" aria-label="Plăți securizate">{% for l in site.payLogos %}<a href="{{ l.href }}" rel="noopener" target="_blank"><img src="{{ l.src }}" alt="{{ l.alt }}" height="{{ l.h or 32 }}" loading="lazy"></a>{% endfor %}</div>{% endif %}
   <div class="foot-bottom"><div class="wrap"><span>© {{ year }} {{ site.company.name }} · {{ site.name }}</span><span>Firma nu este plătitoare de TVA. Prețurile afișate sunt prețuri finale.</span></div></div>
 </footer>
 <div class="cookie" role="dialog" aria-labelledby="ck-t" data-cookie>

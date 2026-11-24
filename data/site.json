@@ -205,5 +205,6 @@
   "ga4": "",
   "googleAds": ""
  },
- "googleClientId": "66624812603-8prrtnekfcg9db6hv2om703s92uih7cg.apps.googleusercontent.com"
+ "googleClientId": "66624812603-8prrtnekfcg9db6hv2om703s92uih7cg.apps.googleusercontent.com",
+ "payLogos": [{"src": "/img/site/plati/netopia-visa-mastercard.png", "alt": "Plăți securizate prin NETOPIA Payments – Visa, Mastercard", "href": "https://netopia-payments.com/", "h": 40}, {"src": "/img/site/plati/anpc-sal.png", "alt": "ANPC – Soluționarea alternativă a litigiilor", "href": "https://anpc.ro/ce-este-sal/", "h": 40}, {"src": "/img/site/plati/anpc-sol.png", "alt": "Soluționarea online a litigiilor", "href": "https://consumer-redress.ec.europa.eu/", "h": 40}]
 }

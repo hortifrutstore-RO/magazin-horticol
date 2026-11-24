@@ -24,3 +24,7 @@ CREATE TABLE IF NOT EXISTS login_attempts (ip TEXT NOT NULL, ts TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS login_attempts_ip ON login_attempts(ip, ts);
 
 CREATE TABLE IF NOT EXISTS stock (sku TEXT PRIMARY KEY, qty INTEGER NOT NULL);
+
+-- Cererile de anulare / retragere din contract trimise din /retragere/ (tabela se creează și automat la prima cerere)
+CREATE TABLE IF NOT EXISTS withdrawals (id INTEGER PRIMARY KEY AUTOINCREMENT, ref TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL,
+  kind TEXT NOT NULL, order_number TEXT, order_id INTEGER, name TEXT, email TEXT, phone TEXT, items TEXT, iban TEXT, message TEXT, ip TEXT);

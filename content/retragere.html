@@ -1,0 +1,76 @@
+Retragere din contract
+<p>Aici îți anulezi comanda sau te retragi din contract direct online, fără să ne scrii sau să ne suni. Completezi formularul, apeși <strong>„Confirmă retragerea”</strong> și primești imediat pe email confirmarea de primire, cu data și ora cererii.</p>
+<ul>
+<li><strong>Coletul nu a plecat încă?</strong> Alege „Anulez comanda”. O anulăm gratuit și, dacă ai plătit cu cardul, îți returnăm toți banii.</li>
+<li><strong>Ai primit deja produsele?</strong> Alege „Mă retrag din contract”. Ai 14 zile de la primire, fără să explici motivul. Detaliile sunt pe pagina <a href="/retur/">Retur în 14 zile</a>.</li>
+</ul>
+
+<form id="wd" class="wd" novalidate>
+  <fieldset class="wd-kind">
+    <legend>Ce vrei să faci?</legend>
+    <label class="opt"><input type="radio" name="kind" value="retragere" checked><span><strong>Mă retrag din contract</strong><small>Am primit produsele și vreau să le returnez.</small></span></label>
+    <label class="opt"><input type="radio" name="kind" value="anulare"><span><strong>Anulez comanda</strong><small>Comanda nu a fost încă expediată.</small></span></label>
+  </fieldset>
+  <div class="form-grid">
+    <label class="fl">Numărul comenzii *<input class="field" name="number" required maxlength="40" placeholder="ex. MH261124-AB12" autocomplete="off"><span class="err">Completează numărul comenzii (e în emailul de confirmare).</span></label>
+    <label class="fl">Nume și prenume *<input class="field" name="name" required maxlength="120" autocomplete="name"><span class="err">Completează numele.</span></label>
+    <label class="fl">Email (cel folosit la comandă) *<input class="field" type="email" name="email" required maxlength="160" autocomplete="email"><span class="err">Adresa de email nu pare corectă.</span></label>
+    <label class="fl">Telefon<input class="field" type="tel" name="phone" maxlength="30" autocomplete="tel"></label>
+  </div>
+  <label class="fl">Produsele pe care le returnezi <small class="wd-note">(gol = toată comanda)</small><textarea class="field" name="items" rows="3" maxlength="1500" placeholder="ex. Greblă dublă 2 în 1, 1 bucată"></textarea></label>
+  <label class="fl" data-iban>IBAN pentru rambursare <small class="wd-note">(doar dacă ai plătit ramburs; la plata cu cardul banii revin pe card)</small><input class="field" name="iban" maxlength="60" placeholder="RO.. și titularul contului"></label>
+  <label class="fl">Mesaj (opțional)<textarea class="field" name="message" rows="3" maxlength="1500"></textarea></label>
+  <input type="text" name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+  <div class="form-msg" data-msg role="alert"></div>
+  <button class="btn" type="submit" data-btn>Confirmă retragerea</button>
+</form>
+<div class="notice wd-ok" id="wd-ok" hidden tabindex="-1"></div>
+
+<p class="wd-small">Poți trimite cererea și pe email la <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a> sau telefonic la <a href="tel:{{ site.contact.phoneHref }}">{{ site.contact.phone }}</a>. Datele din formular le folosim doar pentru a procesa cererea, conform <a href="/confidentialitate/">politicii de confidențialitate</a>.</p>
+
+<script>
+(function () {
+  var f = document.getElementById('wd'), ok = document.getElementById('wd-ok');
+  var msg = f.querySelector('[data-msg]'), btn = f.querySelector('[data-btn]'), iban = f.querySelector('[data-iban]');
+  function kind() { return f.querySelector('input[name=kind]:checked').value; }
+  function sync() {
+    var a = kind() === 'anulare';
+    btn.textContent = a ? 'Confirmă anularea' : 'Confirmă retragerea';
+    iban.hidden = a;
+  }
+  f.addEventListener('change', sync);
+  var q = new URLSearchParams(location.search);
+  if (q.get('comanda')) f.number.value = q.get('comanda');
+  if (q.get('tip') === 'anulare') { f.querySelector('input[value=anulare]').checked = true; }
+  sync();
+  function bad(el, cond) { el.closest('.fl').classList.toggle('invalid', cond); return cond; }
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    msg.classList.remove('show');
+    var err = false;
+    err = bad(f.number, !f.number.value.trim()) || err;
+    err = bad(f.name, !f.name.value.trim()) || err;
+    err = bad(f.email, !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(f.email.value.trim())) || err;
+    if (err) { var first = f.querySelector('.invalid .field'); if (first) first.focus(); return; }
+    var body = {};
+    new FormData(f).forEach(function (v, k) { body[k] = v; });
+    btn.disabled = true; btn.textContent = 'Se trimite…';
+    fetch('/api/withdrawal', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
+      .then(function (d) {
+        if (!d.ok) throw new Error(d.error || '');
+        var when = new Date(d.at).toLocaleString('ro-RO', { timeZone: 'Europe/Bucharest', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        var a = body.kind === 'anulare';
+        ok.innerHTML = '<h2>Am primit cererea ta</h2><p>Cererea de ' + (a ? 'anulare a comenzii' : 'retragere din contract') + ' pentru comanda <strong></strong> a fost înregistrată pe <strong>' + when + '</strong>, cu numărul <strong>' + d.ref + '</strong>.</p>'
+          + '<p>' + (d.emailed ? 'Ți-am trimis confirmarea de primire pe email (verifică și Spam).' : 'Notează numărul cererii: este dovada ei.') + ' '
+          + (a ? 'Dacă coletul nu a plecat, anulăm comanda și îți confirmăm pe email.' : 'Îți scriem în cel mult o zi lucrătoare cu detaliile returului. Trimite produsele în cel mult 14 zile.') + '</p>';
+        ok.querySelector('strong').textContent = body.number.toUpperCase();
+        f.hidden = true; ok.hidden = false; ok.focus(); ok.scrollIntoView({ block: 'center' });
+      })
+      .catch(function (x) {
+        msg.textContent = (x && x.message) || 'Cererea nu a putut fi trimisă. Încearcă din nou sau scrie-ne pe email.';
+        msg.classList.add('show'); sync(); btn.disabled = false;
+      });
+  });
+})();
+</script>
